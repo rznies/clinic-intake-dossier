@@ -42,7 +42,14 @@ export function toGeminiOpenApiSchema(schema: any): any {
 
   const out: Record<string, any> = {};
   for (const [key, val] of Object.entries(schema)) {
-    if (key === "$schema" || key === "default" || key === "additionalProperties" || key === "not") {
+    if (
+      key === "$schema" ||
+      key === "default" ||
+      key === "additionalProperties" ||
+      key === "not" ||
+      key === "minItems" ||
+      key === "maxItems"
+    ) {
       continue;
     }
 
@@ -164,7 +171,10 @@ CRITICAL SAFETY & FIELD SEMANTICS RULES:
    - NO outcome guarantees (never use "guarantee", "promise", "100%").
    - NO painless claims (never use "painless", "no pain", "zero discomfort").
    - NO superlatives (never use "best", "cure", "miracle", "#1").
-   - needs_clinical_review must be true for all 5 hooks.`;
+   - needs_clinical_review must be true for all 5 hooks.
+9. STRICT CONCISENESS & BOUNDS:
+   - Keep all descriptions, bio summaries, and answer summaries under 30 words.
+   - Do NOT include raw HTML, scripts, or large markdown blocks in string fields.`;
 
   const userPrompt = `Target Clinic Root URL: ${clinicUrl}
 
@@ -178,7 +188,7 @@ ${p.text}
   )
   .join("\n\n")}
 
-Extract the complete structured dossier according to the JSON schema.`;
+Extract the complete structured dossier according to the JSON schema. Ensure the response is concise, valid JSON.`;
 
   let tokensUsed = { input: 0, output: 0, total: 0 };
   let rawJson = "";
@@ -194,6 +204,7 @@ Extract the complete structured dossier according to the JSON schema.`;
         responseMimeType: "application/json",
         responseSchema: geminiSchema as any,
         temperature: 0.1,
+        maxOutputTokens: 8192,
       },
     });
   });
@@ -216,18 +227,21 @@ Extract the complete structured dossier according to the JSON schema.`;
   } catch (initialErr: any) {
     warnings.push(`Initial JSON schema validation failed: ${initialErr.message}. Retrying once with error feedback...`);
 
+    // Truncate rawJson in retry context if it was too large or broken
+    const cleanSample = rawJson.length > 2000 ? rawJson.slice(0, 2000) + "\n... [truncated]" : rawJson;
+
     // Retry once with error feedback
     const retryResponse = await callGeminiWithBackoff(async () => {
       return await ai.models.generateContent({
         model: modelString,
         contents: [
           { role: "user", parts: [{ text: `${systemInstruction}\n\n${userPrompt}` }] },
-          { role: "model", parts: [{ text: rawJson }] },
+          { role: "model", parts: [{ text: cleanSample }] },
           {
             role: "user",
             parts: [
               {
-                text: `The previous response failed schema validation with error: ${initialErr.message}. Please fix the JSON and return only the valid JSON matching the schema.`,
+                text: `The previous response failed schema validation with error: ${initialErr.message}. Please generate a concise, valid JSON object adhering strictly to the schema. Ensure all fields and strings are properly closed and within limits.`,
               },
             ],
           },
@@ -236,6 +250,7 @@ Extract the complete structured dossier according to the JSON schema.`;
           responseMimeType: "application/json",
           responseSchema: geminiSchema as any,
           temperature: 0.1,
+          maxOutputTokens: 8192,
         },
       });
     });

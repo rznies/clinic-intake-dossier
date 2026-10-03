@@ -22,31 +22,31 @@ export const ClinicNameFieldSchema = createFieldSchema(z.string().nullable());
 
 // 2. Doctor Name and Qualifications
 export const DoctorItemSchema = z.object({
-  name: z.string(),
-  qualifications: z.array(z.string()).default([]),
-  title: z.string().optional().nullable(),
-  bio_summary: z.string().optional().nullable(),
+  name: z.string().describe("Doctor's full name, e.g. Dr. Abraham Hoellrich"),
+  qualifications: z.array(z.string()).default([]).describe("Degrees/credentials, e.g. ['DDS']"),
+  title: z.string().optional().nullable().describe("Concise title under 10 words, e.g. Lead Dentist, DDS"),
+  bio_summary: z.string().optional().nullable().describe("Concise bio summary under 30 words"),
 });
-export const DoctorFieldSchema = createFieldSchema(z.array(DoctorItemSchema).default([]));
+export const DoctorFieldSchema = createFieldSchema(z.array(DoctorItemSchema).max(6).default([]));
 
 // 3. Specialty
 export const SpecialtyFieldSchema = createFieldSchema(z.array(z.string()).default([]));
 
 // 4. Services / Procedures
 export const ServiceItemSchema = z.object({
-  name: z.string(),
-  category: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
+  name: z.string().describe("Name of the service or procedure"),
+  category: z.string().optional().nullable().describe("Category, e.g. Preventative, Cosmetic, Surgery"),
+  description: z.string().optional().nullable().describe("Concise summary under 30 words"),
 });
-export const ServicesFieldSchema = createFieldSchema(z.array(ServiceItemSchema).default([]));
+export const ServicesFieldSchema = createFieldSchema(z.array(ServiceItemSchema).max(12).default([]));
 
 // 5. Location
 export const LocationValueSchema = z.object({
-  address: z.string().optional().nullable(),
-  city: z.string().optional().nullable(),
-  state: z.string().optional().nullable(),
-  postal_code: z.string().optional().nullable(),
-  country: z.string().optional().nullable(),
+  address: z.string().optional().nullable().describe("Street address only, e.g. 1220 Grandview Avenue"),
+  city: z.string().optional().nullable().describe("City name only, e.g. Columbus"),
+  state: z.string().optional().nullable().describe("State code or name only, e.g. OH"),
+  postal_code: z.string().optional().nullable().describe("ZIP/Postal code only, e.g. 43212"),
+  country: z.string().optional().nullable().describe("Country name, e.g. USA"),
 });
 export const LocationFieldSchema = createFieldSchema(LocationValueSchema.nullable());
 
@@ -64,7 +64,16 @@ export const ContactChannelsValueSchema = z.object({
 export const ContactChannelsFieldSchema = createFieldSchema(ContactChannelsValueSchema.nullable());
 
 // 8. Hours
-export const HoursValueSchema = z.record(z.string(), z.string());
+export const HoursValueSchema = z.object({
+  monday: z.string().optional().nullable(),
+  tuesday: z.string().optional().nullable(),
+  wednesday: z.string().optional().nullable(),
+  thursday: z.string().optional().nullable(),
+  friday: z.string().optional().nullable(),
+  saturday: z.string().optional().nullable(),
+  sunday: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+});
 export const HoursFieldSchema = createFieldSchema(HoursValueSchema.nullable());
 
 // 9. Social Links
@@ -72,15 +81,15 @@ export const SocialLinkItemSchema = z.object({
   platform: z.string(),
   url: z.string(),
 });
-export const SocialLinksFieldSchema = createFieldSchema(z.array(SocialLinkItemSchema).default([]));
+export const SocialLinksFieldSchema = createFieldSchema(z.array(SocialLinkItemSchema).max(8).default([]));
 
 // 10. Existing Photos / Videos Found
 export const MediaAssetItemSchema = z.object({
   type: z.enum(["headshot", "clinic_photo", "procedure_photo", "video_tour", "youtube_video", "logo", "other"]),
   url: z.string().optional().nullable(),
-  description: z.string(),
+  description: z.string().describe("Concise asset description under 20 words"),
 });
-export const MediaAssetsFieldSchema = createFieldSchema(z.array(MediaAssetItemSchema).default([]));
+export const MediaAssetsFieldSchema = createFieldSchema(z.array(MediaAssetItemSchema).max(10).default([]));
 
 // 11. Tone & Positioning Signals (INFERRED allowed)
 export const TonePositioningValueSchema = z.object({
@@ -112,7 +121,7 @@ export const RecordingReadinessFieldSchema = createFieldSchema(RecordingReadines
 // 14. Patient FAQs
 export const AnsweredFAQSchema = z.object({
   question: z.string(),
-  answer_summary: z.string(),
+  answer_summary: z.string().describe("Concise summary under 30 words"),
   source_url: z.string(),
   evidence_quote: z.string(),
 });
@@ -123,8 +132,8 @@ export const FAQGapSchema = z.object({
 });
 
 export const PatientFAQsSchema = z.object({
-  answered_on_site: z.array(AnsweredFAQSchema).default([]),
-  gaps: z.array(FAQGapSchema).default([]),
+  answered_on_site: z.array(AnsweredFAQSchema).max(5).default([]),
+  gaps: z.array(FAQGapSchema).min(3).max(5).default([]),
 });
 
 // 15. Reel Hooks

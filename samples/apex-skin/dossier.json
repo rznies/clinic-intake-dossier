@@ -1,0 +1,386 @@
+{
+  "url": "https://apexskin.com",
+  "run_date": "2026-10-03T07:53:22.140Z",
+  "gemini_model": "gemini-3.8-flash",
+  "status_header": "3 of 13 found, 6 inferred, 4 missing, 5 verifier downgrades, FAQ gaps: 5, 2 blockers, 2 drafts ready. Ready for strategy: false (Pending 2 onboarding items (Designated Clinical Approval Contact & Doctor Recording Readiness & Audio Setup))",
+  "summary_counts": {
+    "found": 3,
+    "inferred": 6,
+    "missing": 4,
+    "verifier_downgrades": 5,
+    "faq_gaps": 5,
+    "blockers": 2,
+    "drafts_ready": 2,
+    "ready_for_strategy": false,
+    "strategy_blockers_reason": "Pending 2 onboarding items (Designated Clinical Approval Contact & Doctor Recording Readiness & Audio Setup)"
+  },
+  "downgrade_reasons": {
+    "quote_not_in_page": 4,
+    "value_token_not_in_quote": 1,
+    "quote_too_long": 0,
+    "missing_quote": 0
+  },
+  "fields": {
+    "clinic_name": {
+      "value": "Apex Skin",
+      "status": "FOUND",
+      "source_url": "https://apexskin.com/",
+      "evidence_quote": "Apex Skin is Northeast Ohio's premier physician-owned dermatology practice",
+      "confidence": "high"
+    },
+    "doctor_name_and_qualifications": {
+      "value": [
+        {
+          "name": "Dr. Jorge Garcia-Zuazaga",
+          "qualifications": [],
+          "title": "Founder and President, Mohs Surgeon & Dermatologist述 bio placeholder omitted for length as per instructions, brief summary below: Founder and President of Apex Skin specializing in skin cancer surgery and dermatology. bio_summary: Founder and President of Apex Skin specializing in skin cancer surgery and aesthetic dermatology. qualifications: MD, MBA, FAAD, FACMS. title: Founder and President bio_summary: Founder and President specializing in skin cancer surgery and dermatology. qualifications: [\"MD\", \"MBA\", \"FAAD\", \"FACMS\"]"
+        }
+      ],
+      "status": "INFERRED",
+      "source_url": "https://apexskin.com/our-team",
+      "evidence_quote": "Jorge Garcia-Zuazaga MD | MBA | FAAD | FACMS Founder and President",
+      "confidence": "high"
+    },
+    "specialty": {
+      "value": [
+        "Dermatology",
+        "Mohs Micrographic Surgery",
+        "Aesthetic Dermatology"
+      ],
+      "status": "FOUND",
+      "source_url": "https://apexskin.com/",
+      "evidence_quote": "Apex Skin is Northeast Ohio's premier physician-owned dermatology practice",
+      "confidence": "high"
+    },
+    "services_procedures": {
+      "value": [
+        {
+          "name": "Mohs Skin Cancer Surgery",
+          "category": "Surgical Dermatology",
+          "description": "Specialized micrographic surgical procedure to remove skin cancer while preserving healthy tissue."
+        },
+        {
+          "name": "Full Body Cancer Screening",
+          "category": "Medical Dermatology",
+          "description": "Comprehensive skin examinations to detect abnormal spots and early signs of skin cancer."
+        },
+        {
+          "name": "Chemical Peels",
+          "category": "Aesthetic Services",
+          "description": "Skin resurfacing treatments, including The Perfect Derma Peel, to refresh skin appearance."
+        },
+        {
+          "name": "Microneedling",
+          "category": "Aesthetic Services",
+          "description": "Collagen-stimulating procedure designed to address skin texture and acne scarring."
+        },
+        {
+          "name": "Injectables & Wrinkle Relaxers",
+          "category": "Aesthetic Services",
+          "description": "Cosmetic injectables including Botox and Dysport to soften facial fine lines."
+        },
+        {
+          "name": "Dermal Fillers",
+          "category": "Aesthetic Services",
+          "description": "Injectable aesthetic filler treatments designed to restore volume."
+        }
+      ],
+      "status": "INFERRED",
+      "source_url": "https://apexskin.com/",
+      "evidence_quote": "offering same-day access to expert medical, surgical, and aesthetic care across 16 locations.",
+      "confidence": "high"
+    },
+    "location": {
+      "value": {
+        "address": "270 East State St., Suite 100",
+        "city": "Alliance",
+        "state": "OH份 state: OH postal_code: 44601 country: USA address: 270 East State St., Suite 100 city: Alliance state: OH postal_code: 44601 country: United States"
+      },
+      "status": "INFERRED",
+      "source_url": "https://apexskin.com/",
+      "evidence_quote": "270 East State St., Suite 100 Alliance, OH 44601",
+      "confidence": "high"
+    },
+    "languages": {
+      "value": [],
+      "status": "MISSING",
+      "source_url": null,
+      "evidence_quote": null,
+      "confidence": "low"
+    },
+    "contact_booking_channels": {
+      "value": {
+        "phone": "833-279-7546",
+        "whatsapp": null
+      },
+      "status": "INFERRED",
+      "source_url": "https://apexskin.com/contact",
+      "evidence_quote": "For general questions or help to schedule a dermatologist appointment, call 833-279-SKIN.",
+      "confidence": "high"
+    },
+    "hours": {
+      "value": null,
+      "status": "MISSING",
+      "source_url": null,
+      "evidence_quote": null,
+      "confidence": "low"
+    },
+    "social_links": {
+      "value": [
+        {
+          "platform": "Facebook",
+          "url": "https://www.facebook.com/Apex-Dermatology-236807683025666/"
+        },
+        {
+          "platform": "LinkedIn",
+          "url": "https://www.linkedin.com/company/apex-dermatology-and-skin-surgery-center"
+        },
+        {
+          "platform": "YouTube",
+          "url": "https://www.youtube.com/channel/UCqKRaS42bb4N5UzB7mR6fdg"
+        },
+        {
+          "platform": "Instagram",
+          "url": "https://www.instagram.com/apexskin/"
+        }
+      ],
+      "status": "INFERRED",
+      "source_url": "https://apexskin.com/",
+      "evidence_quote": "Facebook page opens in new window",
+      "confidence": "high"
+    },
+    "existing_media_assets": {
+      "value": [
+        {
+          "type": "logo",
+          "url": "https://www.apexskin.com/wp-content/uploads/2023/04/Apex_Logo_159.png",
+          "description": "Apex Skin practice logo image"
+        },
+        {
+          "type": "headshot",
+          "url": "https://www.apexskin.com/wp-content/uploads/2016/01/Dr.Garcia-2-Edit-540x720.jpg",
+          "description": "Dr. Jorge Garcia-Zuazaga professional portrait"
+        }
+      ],
+      "status": "FOUND",
+      "source_url": "https://apexskin.com/our-team",
+      "evidence_quote": "Dr. Jorge Garcia-Zuazaga - Skin Cancer and Aesthetic Dermatology Specialist",
+      "confidence": "high"
+    },
+    "tone_positioning_signals": {
+      "value": {
+        "brand_tone": "Clinical, accessible, and patient-centered",
+        "target_audience": "Adult and pediatric patients seeking medical, surgical, or aesthetic skin care",
+        "differentiators": [
+          "Same-day appointment availability for urgent skin concerns",
+          "More than 100,000 skin cancers treated",
+          "16 regional locations across Northeast Ohio"
+        ],
+        "aesthetic_style": "Modern medical practice emphasizing accessibility and specialized care"
+      },
+      "status": "INFERRED",
+      "source_url": null,
+      "evidence_quote": null,
+      "confidence": "high"
+    },
+    "approval_contact": {
+      "value": null,
+      "status": "MISSING",
+      "source_url": null,
+      "evidence_quote": null,
+      "confidence": "low"
+    },
+    "recording_readiness": {
+      "value": null,
+      "status": "MISSING",
+      "source_url": null,
+      "evidence_quote": null,
+      "confidence": "low"
+    },
+    "patient_faqs": {
+      "answered_on_site": [
+        {
+          "question": "Do you offer same-day appointments?",
+          "answer_summary": "Yes, same-day dermatology appointments are available to address urgent skin needs.",
+          "source_url": "https://apexskin.com/contact",
+          "evidence_quote": "Yes! Same-day dermatology appointments are available for urgent needs."
+        },
+        {
+          "question": "Can I schedule an appointment online?",
+          "answer_summary": "Apex Skin provides an online self-scheduling tool for patients to book appointments directly.",
+          "source_url": "https://apexskin.com/contact",
+          "evidence_quote": "Apex Skin offers a self-scheduling tool so patients can book a dermatology appointment online."
+        },
+        {
+          "question": "How should I contact Apex Skin about a billing question?",
+          "answer_summary": "Patients can call the billing department directly or use the online patient portal.",
+          "source_url": "https://apexskin.com/contact",
+          "evidence_quote": "For billing questions, please call the billing department at 440-443-0413 for the fastest response."
+        }
+      ],
+      "gaps": [
+        {
+          "question": "What preparation is recommended before a chemical peel or laser treatment?",
+          "status": "INFERRED"
+        },
+        {
+          "question": "What is the expected recovery timeline after Mohs micrographic surgery?",
+          "status": "INFERRED"
+        },
+        {
+          "question": "Which aesthetic dermatology procedures are typically covered by health insurance?",
+          "status": "INFERRED"
+        },
+        {
+          "question": "Can I schedule an appointment online?",
+          "status": "INFERRED"
+        },
+        {
+          "question": "How should I contact Apex Skin about a billing question?",
+          "status": "INFERRED"
+        }
+      ]
+    },
+    "reel_hooks": [
+      {
+        "text": "Noticing a new or evolving mole? Here is what dermatologists look for during a skin cancer screening.",
+        "source_url": "https://apexskin.com/",
+        "status": "INFERRED",
+        "needs_clinical_review": true
+      },
+      {
+        "text": "Thinking about microneedling for stubborn acne marks? Here is how the process stimulates collagen production.",
+        "source_url": "https://apexskin.com/",
+        "status": "INFERRED",
+        "needs_clinical_review": true
+      },
+      {
+        "text": "How does Mohs micrographic surgery work to remove skin cancer while saving healthy tissue? Let us explain.",
+        "source_url": "https://apexskin.com/",
+        "status": "INFERRED",
+        "needs_clinical_review": true
+      },
+      {
+        "text": "Considering wrinkle relaxers like Botox or Dysport? Here is how dermatologists approach personalized units.",
+        "source_url": "https://apexskin.com/",
+        "status": "INFERRED",
+        "needs_clinical_review": true
+      },
+      {
+        "text": "Dealing with frequent eczema or psoriasis flare-ups? Here are key strategies clinical providers recommend.",
+        "source_url": "https://apexskin.com/",
+        "status": "INFERRED",
+        "needs_clinical_review": true
+      }
+    ]
+  },
+  "missing_items": [
+    {
+      "key": "approval_contact",
+      "label": "Designated Clinical Approval Contact",
+      "blocking_reason": "Weekly patient-education video scripts cannot be released to production without an authorized clinical sign-off persona.",
+      "who_to_ask": "Lead Doctor / Clinic Director",
+      "whatsapp_draft": "Hi Dr. Jorge Garcia-Zuazaga, who from your clinical team should review and approve the weekly patient-education video scripts before they are published?",
+      "target_field": "approval_contact"
+    },
+    {
+      "key": "recording_setup",
+      "label": "Doctor Recording Readiness & Audio Setup",
+      "blocking_reason": "Voice twin cloning requires a clean audio sample or confirmed dedicated microphone in a quiet room.",
+      "who_to_ask": "Lead Doctor",
+      "whatsapp_draft": "Hi Dr. Jorge Garcia-Zuazaga, do you currently have a dedicated USB/lapel microphone for recording your 2-minute voice twin calibration sample, or should we ship a kit?",
+      "target_field": "recording_readiness"
+    }
+  ],
+  "tasks": [
+    {
+      "client": "Apex Skin",
+      "item": "Designated Clinical Approval Contact",
+      "owner": "Operations Coordinator",
+      "next_action": "Send WhatsApp request to Lead Doctor / Clinic Director",
+      "due": "2026-10-06",
+      "status": "OPEN"
+    },
+    {
+      "client": "Apex Skin",
+      "item": "Doctor Recording Readiness & Audio Setup",
+      "owner": "Operations Coordinator",
+      "next_action": "Send WhatsApp request to Lead Doctor",
+      "due": "2026-10-06",
+      "status": "OPEN"
+    }
+  ],
+  "pages_scraped": [
+    {
+      "url": "https://apexskin.com/",
+      "title": "Apex Skin | Dermatology & Aesthetic Skin Care Services",
+      "char_count": 25047
+    },
+    {
+      "url": "https://apexskin.com/our-team",
+      "title": "Apex Dermatology Experts & Skin Care Providers in Ohio | Specialists Near Me",
+      "char_count": 25047
+    },
+    {
+      "url": "https://apexskin.com/contact",
+      "title": "Contact Apex Skin | Dermatology & Aesthetic Appointments in Northeast Ohio",
+      "char_count": 25047
+    },
+    {
+      "url": "https://apexskin.com/about-us",
+      "title": "Apex Dermatology and Skin Surgery Center | Dermatologists in Ohio",
+      "char_count": 11609
+    },
+    {
+      "url": "https://apexskin.com/new-patients",
+      "title": "Dermatology Care in Northeast Ohio | New Patients | Apex Skin",
+      "char_count": 25047
+    },
+    {
+      "url": "https://apexskin.com/services",
+      "title": "General Dermatology Services Ohio | Skin Condition Treatment | Apex Skin",
+      "char_count": 25047
+    },
+    {
+      "url": "https://apexskin.com/insurance",
+      "title": "Insurance Accepted | Apex Skin",
+      "char_count": 12190
+    },
+    {
+      "url": "https://apexskin.com/blog",
+      "title": "Apex Skin Blog | Expert Skincare Tips & Dermatology News",
+      "char_count": 25047
+    },
+    {
+      "url": "https://apexskin.com/our-team/brian-moore",
+      "title": "SUB-INVESTIGATORS – Apex Clinical Research Center",
+      "char_count": 6952
+    },
+    {
+      "url": "https://apexskin.com/our-team/megan-sevilla",
+      "title": "SUB-INVESTIGATORS – Apex Clinical Research Center",
+      "char_count": 6952
+    },
+    {
+      "url": "https://apexskin.com/our-team/jackie-hollcraft",
+      "title": "Apex Clinical Research Center | Dermatology Clinical Trials Ohio",
+      "char_count": 18513
+    },
+    {
+      "url": "https://apexskin.com/our-team/dr-brian-moore-md",
+      "title": "Dr. Brian Moore | Aesthetic Dermatology & Pigmented Lesions Care",
+      "char_count": 10755
+    }
+  ],
+  "credits_used": 12,
+  "tokens_used": {
+    "input": 30118,
+    "output": 2618,
+    "total": 34611
+  },
+  "warnings": [
+    "Page https://apexskin.com/our-team/jackie-hollcraft succeeded on retry after rate-limit backoff.",
+    "Page https://apexskin.com/our-team/dr-brian-moore-md succeeded on retry after rate-limit backoff.",
+    "Input character budget cap (75000 chars) reached; omitted later pages."
+  ]
+}
