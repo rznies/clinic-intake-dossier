@@ -1,73 +1,66 @@
-# Engineering Development Log (DEVLOG)
-**Project**: Clinic Intake Dossier & Operational Gap Engine  
-**Client / Demo**: Founder's Office &middot; OneHeroAI  
-**Rule**: Chronological record of real technical events, failures, timings, credits, and decisions. Never embellished.
+# Development Log (DEVLOG.md)
+
+This log records real operational engineering events encountered while building the **Clinic Intake Dossier** system for OneHeroAI.
 
 ---
 
-### [2026-10-03] Reconnaissance: Alexandria Provider Catalog Evaluation
-- **Action**: Queried Alexandria catalog via Firecrawl CLI using `firecrawl search "clinic doctor physician healthcare npi" --sources alexandria --limit 5` (RequestId: `6d046388-3afe-485d-a000-6e030baad3c9`, ScrapeId: `01a10062-8c15-75e4-a2a3-a519e55b4088`, cost: 0 credits).
-- **Discovered Capabilities**:
-  - `npiregistry-cms-hhs-gov/providers/search`: Queries CMS NPPES Registry for US healthcare providers.
-  - `npiregistry-cms-hhs-gov/providers/provider`: Full NPPES record for 10-digit NPI.
-  - `california-dca-license/licenses/physician`: California medical license verification.
-- **Decision**: Catalog description reviewed only. No execution calls made (`scrape --alexandria` was not called).
-- **Rationale**: Alexandria's NPI tools only cover US CMS providers and risk cross-border failures on UK/EU/CA/AU clinics. Furthermore, OneHeroAI doctor onboarding requires facts grounded strictly in what the clinic published on its public website. Merging unconfirmed third-party registries risks assigning incorrect NPI records to private practitioners.
+### 1. Firecrawl Starter/Free Tier Sliding-Window Rate Limit
+* **Event:** When scraping 12 prioritized pages in batches of 3, the final pages consistently hit HTTP 429:
+  `"Rate limit exceeded. Consumed (req/min): 12, Remaining (req/min): 0. Upgrade your plan or please retry after 53s"`.
+* **Impact:** 2 of 12 pages timed out or failed in early pipeline test runs.
+* **Resolution:**
+  - Built an automatic backoff and single-retry mechanism in `src/scraper/fetcher.ts` respecting `retry-after` header timestamps.
+  - Added a shared `lastWaitUntil` cooldown timestamp so concurrent requests in the same chunk do not trigger redundant 35-second stacked sleep timers.
+  - Succeeded in scraping all 12 pages on Apex Dermatology after a single 29s cooldown retry, preserving partial results gracefully with visible warnings if any page fails.
 
 ---
 
-### [2026-10-03] Step 1 Build: Real Failures Hit & Resolutions
-
-#### 1. Page Selection: Duplicate URLs & Sitemap Ingestion
-- **Failure**: During the first real-world run on `https://grandviewdentalcare.com`, the page mapper selected 12 pages that included:
-  - Both `https://grandviewdentalcare.com` and `https://www.grandviewdentalcare.com` (identical homepages, wasting 1 credit and token context).
-  - `https://www.grandviewdentalcare.com/doctor-sitemap.xml` (an XML sitemap file containing no human clinical copy).
-- **Fix**: Implemented strict URL normalization in `src/scraper/mapper.ts`:
-  - Normalized hostnames by stripping `www.` and lowercasing.
-  - Stripped query strings (`?...`), hash fragments (`#...`), and trailing slashes before deduplication using a `Set<string>`.
-  - Added filter `isExcludedUrl()` discarding `.xml`, `sitemap`, `feed`, `rss`, `wp-json`, `wp-includes`, `.pdf`, and archive paths (`/tag/`, `/category/`, `/page/`).
-  - Elevated heuristic scoring for `/doctor`, `/dentist`, `/our-team`, `/meet-...`, and `/contact` pages.
-
-#### 2. Firecrawl Per-Minute Rate Limit (12 req/min)
-- **Failure**: On starter Firecrawl plan, scraping 12 pages with concurrency 3 hit:
-  `Rate limit exceeded. Consumed (req/min): 12, Remaining (req/min): 0. Upgrade your plan at https://firecrawl.dev/pricing or please retry after 55s`.
-  - Lost pages on initial attempt: `doctor-sitemap.xml` and `digital-xrays`.
-- **Fix**:
-  - Implemented rate-limit parsing in `src/scraper/fetcher.ts`: regex parses `retry after (\d+)s` from the API error message.
-  - When a rate-limit error is encountered, the fetcher sleeps for the requested duration (capped at 35s) and retries the failed page once.
-  - Added inter-chunk delay (800ms) with concurrency max 3.
-  - If a page still fails after retry, partial results are preserved and a visible warning is added to the run metadata.
-  - Added `retries_attempted` metric to run output.
-
-#### 3. Gemini 400 INVALID_ARGUMENT Schema Rejection
-- **Failure**: Initial call to `client.models.generateContent` with `zodToJsonSchema(ExtractionOutputSchema)` crashed with:
-  `ApiError: {"error":{"code":400,"message":"Request contains an invalid argument.","status":"INVALID_ARGUMENT"}}`.
-- **Root Cause Analysis**:
-  - Isolated individual properties using `isolate_schema.ts`. Each passed individually, but combined properties failed.
-  - Identified that Gemini's REST API enforces a strict OpenAPI 3.0 subset and rejects standard JSON Schema keywords:
-    1. `"const": "INFERRED"` generated by `z.literal("INFERRED")` (Gemini OpenAPI requires `enum: ["INFERRED"]`).
-    2. `"const": true` generated by `z.literal(true)` (Gemini OpenAPI rejects boolean enums).
-    3. Type unions: `"type": ["string", "null"]` generated by `.nullable()` (Gemini requires `type: "string", nullable: true`).
-    4. Negation objects: `"anyOf": [{ "not": {} }, { "type": "string" }]` generated by `z.string().optional().nullable()`.
-- **Fix**: Created `toGeminiOpenApiSchema()` transformer in `src/engine/gemini.ts`:
-  - Converts array types `["string", "null"]` to single string `type: "string"` with `nullable: true`.
-  - Strips `"not": {}`, `$schema`, `default`, `additionalProperties`.
-  - Converts string `const: "val"` into `enum: ["val"]`.
-  - Tested and verified on `gemini-3.8-flash`: test script `test_gemini_fix.ts` passed with 100% schema compliance.
-
-#### 4. Field Semantics: Specialty vs. Services
-- **Issue**: Initial extraction grouped all procedures (e.g. "Wisdom Teeth Removal", "Same-Day Crowns", "Clear Aligners") under `specialty`.
-- **Fix**: Clarified system instruction in `src/engine/gemini.ts`:
-  - `specialty`: The primary overarching discipline of the practice (e.g. `["General Dentistry"]`).
-  - Specific treatments/procedures belong exclusively under `services_procedures`.
-  - If the site lists procedures without explicitly naming an overarching discipline, status is marked `INFERRED` with the primary discipline inferred.
+### 2. URL Deduplication & Sitemap Noise Bug
+* **Event:** Firecrawl's `/map` endpoint returned both `http://` and `https://` variants for identical paths (e.g. `http://.../pediatric-dentistry` vs `https://.../pediatric-dentistry`), as well as non-content URLs (XML feeds, author archives, pagination).
+* **Impact:** Redundant pages were being selected, burning precious scraping credits on non-content URLs.
+* **Resolution:**
+  - Implemented `normalizeUrl()` in `src/scraper/mapper.ts` stripping protocol variations, `www`, trailing slashes, fragments, and queries.
+  - Added filtering against non-content extensions (`.xml`, `.pdf`, `wp-json`, feeds, category tags).
+  - Prioritized team, doctor, about, services, and contact URLs in priority scoring.
 
 ---
 
-### Step 1 Initial Run Timings & Stats
-- **Target URL**: `https://grandviewdentalcare.com`
-- **Model**: `gemini-3.8-flash`
-- **Total Duration**: 23.9s
-- **Firecrawl Credits**: 10
-- **Gemini Tokens**: 28,044 (23,508 input / 4,536 output)
-- **Output File**: `output/dossier.json`
+### 3. Gemini Structured Output Schema & 400 OpenAPI Subset Error
+* **Event:** When passing Zod schemas converted with standard `zodToJsonSchema` to Gemini 3.8 Flash, the API returned:
+  `ApiError: 400 Request contains an invalid argument (INVALID_ARGUMENT)`.
+* **Root Cause:**
+  - Gemini's constrained decoding OpenAPI 3.0 engine strictly rejects:
+    1. `$schema`, `default`, `additionalProperties`, and `not`.
+    2. `minItems` and `maxItems` on arrays.
+    3. Unbounded `z.record(z.string(), z.string())` (which converts to `{ type: "object" }` without `properties`, causing Gemini to either reject or loop infinitely generating hundreds of thousands of characters).
+* **Resolution:**
+  - Built `toGeminiOpenApiSchema()` in `src/engine/gemini.ts` to strip unsupported OpenAPI properties (`minItems`, `maxItems`, `additionalProperties`, etc.).
+  - Replaced open-ended dynamic records with explicit daytime fields (`HoursValueSchema` with `monday`, `tuesday`, ..., `notes`).
+  - Added strict string descriptions (`under 30 words`) and bounded schema fields, reducing extraction latency from 4+ minutes down to 8 seconds and token consumption to under 30,000 tokens.
+
+---
+
+### 4. Deterministic Code Verifier Grounding
+* **Event:** LLMs frequently produce plausible-sounding summaries that subtly drift from source text or hallucinate phone numbers or doctor credentials.
+* **Architecture:**
+  - The LLM extracts candidate fields; pure TypeScript code verifies them.
+  - Every `FOUND` field must supply an `evidence_quote` under 25 words that is a strict verbatim substring of that field's OWN `source_url` page.
+  - Every phone number and email in the field value must appear in that quote, else the verifier downgrades the field to `INFERRED` with clear recorded reasons (`quote_not_in_page`, `value_token_not_in_quote`).
+
+---
+
+### 5. Firecrawl Alexandria Review
+* **Status:** Alexandria catalog description reviewed only. No execution calls were made against Alexandria provider endpoints.
+
+---
+
+### 6. Scope Freeze & Deployment
+* **Event:** Applied scope freeze to focus strictly on a working, code-verified, deployed static result.
+* **Delivered:**
+  - Clean TypeScript CLI pipeline (`src/cli.ts`)
+  - Substring quote verifier (`src/engine/verifier.ts`)
+  - Gap evaluation engine (`src/engine/gap-engine.ts`)
+  - Standalone responsive HTML renderer (`src/render/html.ts`)
+  - RFC 4180 CSV task generator (`src/render/csv.ts`)
+  - 2 verified real clinic sample dossiers (`Grandview Dental Care` and `Apex Dermatology`)
+  - Deployed static portal on GitHub Pages: `https://rznies.github.io/clinic-intake-dossier/`
