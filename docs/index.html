@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OneHeroAI &bull; Clinic Intake Dossier System</title>
+  <style>
+    *, ::before, ::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      line-height: 1.6;
+      padding-bottom: 4rem;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+    header {
+      margin-bottom: 3rem;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 2rem;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 9999px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .badge-primary { background-color: #3b82f6; color: #ffffff; }
+    .badge-tag { background-color: #334155; color: #cbd5e1; }
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.75rem;
+    }
+    .subtitle {
+      font-size: 1.15rem;
+      color: #94a3b8;
+      max-width: 780px;
+    }
+    .hero-box {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.75rem;
+      margin-bottom: 3rem;
+    }
+    .hero-box h3 {
+      font-size: 1rem;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+    .hero-box p {
+      color: #cbd5e1;
+      font-size: 0.95rem;
+    }
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    .card {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .card:hover {
+      border-color: #38bdf8;
+      transform: translateY(-2px);
+    }
+    .card-clinic {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.25rem;
+    }
+    .card-url {
+      font-size: 0.85rem;
+      color: #38bdf8;
+      font-family: ui-monospace, monospace;
+      margin-bottom: 1rem;
+      word-break: break-all;
+    }
+    .card-stats {
+      background-color: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+      font-size: 0.85rem;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.35rem 0;
+      border-bottom: 1px solid #1e293b;
+    }
+    .stat-row:last-child {
+      border-bottom: none;
+    }
+    .stat-label { color: #94a3b8; }
+    .stat-val { font-weight: 600; color: #f1f5f9; }
+    .status-banner {
+      font-size: 0.75rem;
+      font-family: ui-monospace, monospace;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      margin: 0.75rem 0;
+      background-color: #0f172a;
+      border-left: 3px solid #f59e0b;
+      color: #fde68a;
+    }
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background-color 0.15s ease;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background-color: #2563eb;
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background-color: #1d4ed8;
+    }
+    .btn-secondary {
+      background-color: #334155;
+      color: #f1f5f9;
+    }
+    .btn-secondary:hover {
+      background-color: #475569;
+    }
+    .table-container {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      overflow-x: auto;
+      margin-bottom: 3rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    th {
+      background-color: #0f172a;
+      color: #94a3b8;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 1rem;
+      border-bottom: 1px solid #334155;
+    }
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid #334155;
+      color: #cbd5e1;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    .status-chip {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .chip-found { background-color: #064e3b; color: #6ee7b7; }
+    .chip-inferred { background-color: #78350f; color: #fde68a; }
+    .chip-missing { background-color: #881337; color: #fda4af; }
+    footer {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.85rem;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid #1e293b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="badge badge-primary">OneHeroAI &bull; Founder's Office Demo</span>
+      <h1>Clinic Intake Dossier System</h1>
+      <p class="subtitle">
+        Automated operational intake from a single clinic website URL. Turns unstructured clinic pages into verified dossiers, clinical FAQ gaps, and tracker-ready onboarding tasks.
+      </p>
+    </header>
+
+    <div class="hero-box">
+      <h3>Operational Philosophy</h3>
+      <p>
+        <strong>&ldquo;The LLM extracts; code verifies and decides what is missing.&rdquo;</strong><br>
+        Clinics onboard to OneHeroAI for weekly patient-education video twins, clinic call voice twins, and video FAQ twins. Every missing clinic requirement is treated as an owned operations task (with auto-drafted WhatsApp messages and RFC 4180 CSV export) rather than an scraping error.
+      </p>
+    </div>
+
+    <h2 class="section-title">Verified Clinic Sample Dossiers</h2>
+    <div class="cards-grid">
+
+      <!-- Sample 1: Grandview Dental Care -->
+      <div class="card">
+        <div>
+          <span class="badge badge-tag">Dental Practice</span>
+          <div class="card-clinic">Grandview Dental Care</div>
+          <div class="card-url">https://grandviewdentalcare.com</div>
+
+          <div class="status-banner">
+            5 found &bull; 6 inferred &bull; 2 missing &bull; 5 verifier downgrades &bull; 2 blockers
+          </div>
+
+          <div class="card-stats">
+            <div class="stat-row">
+              <span class="stat-label">Doctors Identified</span>
+              <span class="stat-val">3 Doctors (Dr. Hoellrich, Dr. Grosel)</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Specialty</span>
+              <span class="stat-val">General Dentistry &bull; IV Sedation</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Patient FAQ Gaps</span>
+              <span class="stat-val">5 Clinical Gaps Formulated</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Action Tasks Generated</span>
+              <span class="stat-val">2 Tasks (tasks.csv ready)</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Ready for Strategy Call</span>
+              <span class="stat-val" style="color: #f59e0b;">No (2 Missing Assets)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <a href="samples/grandview-dental/dossier.html" class="btn btn-primary">Open Interactive Dossier &rarr;</a>
+          <a href="samples/grandview-dental/dossier.json" target="_blank" class="btn btn-secondary">JSON</a>
+          <a href="samples/grandview-dental/tasks.csv" download="grandview_tasks.csv" class="btn btn-secondary">tasks.csv</a>
+        </div>
+      </div>
+
+      <!-- Sample 2: Apex Dermatology -->
+      <div class="card">
+        <div>
+          <span class="badge badge-tag">Dermatology Clinic</span>
+          <div class="card-clinic">Apex Dermatology</div>
+          <div class="card-url">https://apexskin.com</div>
+
+          <div class="status-banner">
+            3 found &bull; 6 inferred &bull; 4 missing &bull; 5 verifier downgrades &bull; 2 blockers
+          </div>
+
+          <div class="card-stats">
+            <div class="stat-row">
+              <span class="stat-label">Doctors Identified</span>
+              <span class="stat-val">Dr. Jorge Garcia-Zuazaga, MD</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Specialty</span>
+              <span class="stat-val">Medical, Surgical & Aesthetic Dermatology</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Patient FAQ Gaps</span>
+              <span class="stat-val">5 Clinical Gaps Formulated</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Action Tasks Generated</span>
+              <span class="stat-val">2 Tasks (tasks.csv ready)</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Ready for Strategy Call</span>
+              <span class="stat-val" style="color: #f59e0b;">No (2 Missing Assets)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <a href="samples/apex-skin/dossier.html" class="btn btn-primary">Open Interactive Dossier &rarr;</a>
+          <a href="samples/apex-skin/dossier.json" target="_blank" class="btn btn-secondary">JSON</a>
+          <a href="samples/apex-skin/tasks.csv" download="apex_skin_tasks.csv" class="btn btn-secondary">tasks.csv</a>
+        </div>
+      </div>
+
+    </div>
+
+    <h2 class="section-title">Comparative Intake Matrix</h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Core Onboarding Field</th>
+            <th>Grandview Dental Care</th>
+            <th>Apex Dermatology</th>
+            <th>Verification Rule</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Clinic Name</td>
+            <td><span class="status-chip chip-found">FOUND</span> Grandview Dental Care</td>
+            <td><span class="status-chip chip-found">FOUND</span> Apex Dermatology</td>
+            <td>Exact verbatim substring check on root page</td>
+          </tr>
+          <tr>
+            <td>Doctor(s) &amp; Qualifications</td>
+            <td><span class="status-chip chip-inferred">INFERRED</span> 3 Doctors identified</td>
+            <td><span class="status-chip chip-inferred">INFERRED</span> Dr. Garcia-Zuazaga</td>
+            <td>Phone/email value tokens verified against quote</td>
+          </tr>
+          <tr>
+            <td>Clinical Specialty</td>
+            <td><span class="status-chip chip-found">FOUND</span> General Dentistry</td>
+            <td><span class="status-chip chip-inferred">INFERRED</span> Dermatology</td>
+            <td>Primary discipline vs service treatment list</td>
+          </tr>
+          <tr>
+            <td>Services / Procedures</td>
+            <td><span class="status-chip chip-found">FOUND</span> 8 Procedures listed</td>
+            <td><span class="status-chip chip-inferred">INFERRED</span> Medical & Cosmetic</td>
+            <td>Quote must appear on that field's own source page</td>
+          </tr>
+          <tr>
+            <td>Patient Booking Channel</td>
+            <td><span class="status-chip chip-inferred">INFERRED</span> Online + Phone</td>
+            <td><span class="status-chip chip-inferred">INFERRED</span> Call 833-279-SKIN</td>
+            <td>Phone/URL substring match in evidence quote</td>
+          </tr>
+          <tr>
+            <td>Clinical Approval Contact</td>
+            <td><span class="status-chip chip-missing">MISSING</span> &bull; Task Created</td>
+            <td><span class="status-chip chip-missing">MISSING</span> &bull; Task Created</td>
+            <td>Strict: never guessed, always flagged as gap</td>
+          </tr>
+          <tr>
+            <td>Recording Readiness Setup</td>
+            <td><span class="status-chip chip-missing">MISSING</span> &bull; Task Created</td>
+            <td><span class="status-chip chip-missing">MISSING</span> &bull; Task Created</td>
+            <td>Strict: never guessed, always flagged as gap</td>
+          </tr>
+          <tr>
+            <td>Conservative Reel Hooks</td>
+            <td>5 Hook Ideas (Needs Review: Yes)</td>
+            <td>5 Hook Ideas (Needs Review: Yes)</td>
+            <td>Regex ban: zero guarantees, zero superlatives</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer>
+      OneHeroAI Founder's Office Working Demo &bull; Built with Node.js, TypeScript, Firecrawl SDK, and Gemini 3.8 Flash.
+    </footer>
+  </div>
+</body>
+</html>
