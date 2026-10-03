@@ -162,11 +162,12 @@ CRITICAL SAFETY & FIELD SEMANTICS RULES:
    - "evidence_quotes": An array of 1 to 3 short VERBATIM exact substrings from that field's source page, each UNDER 25 WORDS. For fields like hours, doctors, or social links, include separate short quotes for each detail.
    - "source_url": The exact scraped page URL where ALL these quotes appear.
 4. DOCTORS & QUALIFICATIONS:
-   - Return ALL doctors and dentists found across the scraped pages (search all team and about pages thoroughly).
-   - For each doctor: provide "name", "title" (concise clinical title only, e.g. "Dentist, DDS"), "qualifications" (e.g. ["DDS"]), and "quote" (exact verbatim quote under 25 words mentioning them).
+   - Return up to 8 primary doctors, dentists, or dermatologists found across the scraped pages. If the practice lists many providers, include the primary/lead physicians (e.g. founder, clinical director, principal doctors).
+   - For each doctor: provide "name", "title" (concise clinical title only, under 10 words, e.g. "Dentist, DDS" or "Founder and President"), "qualifications" (e.g. ["DDS"] or ["MD"]), and "quote" (exact verbatim quote under 25 words mentioning them).
    - ZERO MARKETING CLAIMS: Never include ungrounded marketing claims (e.g. "over 500 procedures") unless an exact quote from a scraped page explicitly supports it. Drop all unsupported claims.
 5. FIELD SEMANTICS FOR SPECIALTY VS SERVICES:
-   - specialty: The PRIMARY clinical discipline of the practice (e.g. ["General Dentistry"], ["Orthodontics"], ["Dermatology"]). Put individual treatments, procedures, or equipment under 'services_procedures'. If the site lists specific procedures rather than explicitly stating its overarching discipline, mark status as "INFERRED" with the primary discipline.
+   - specialty: The PRIMARY clinical discipline of the practice (e.g. ["General Dentistry"], ["Dermatology"]). Limit to 1 to 3 items. If inferred, mark status INFERRED.
+   - services_procedures: Specific procedures offered (limit to at most 10 primary procedures). Include 1 to 3 verbatim evidence_quotes from the services page.
 6. "INFERRED" STATUS: Allowed only for 'tone_positioning_signals', 'specialty' (if inferred from procedures), and 'reel_hooks' (when inspired by site topics rather than direct quotes).
 7. "MISSING" FIELDS: 'approval_contact' and 'recording_readiness' must be "MISSING" unless explicitly stated on the public site (clinics almost never list internal coordinators or recording gear publicly).
 8. PATIENT FAQS:
@@ -180,7 +181,6 @@ CRITICAL SAFETY & FIELD SEMANTICS RULES:
    - needs_clinical_review must be true for all 5 hooks.
 10. STRICT CONCISENESS & SCALARS:
    - For location: 'address', 'city', 'state', 'postal_code', 'country' MUST be short clean scalar strings (e.g. state: 'OH', postal_code: '43212'). NEVER put explanations, chain-of-thought, or markdown in these fields.
-   - For doctors: Return ALL doctors found across the practice (e.g. return entries for all 3 dentists: Dr. Abraham Hoellrich, Dr. Max Grosel, Dr. Nisha Grosel).
    - Keep all descriptions, bio summaries, and answer summaries under 30 words.
    - Do NOT include raw HTML, scripts, or large markdown blocks in string fields.`;
 
@@ -212,7 +212,7 @@ Extract the complete structured dossier according to the JSON schema. Ensure the
         responseMimeType: "application/json",
         responseSchema: geminiSchema as any,
         temperature: 0.1,
-        maxOutputTokens: 8192,
+        maxOutputTokens: 16384,
         thinkingConfig: {
           thinkingBudget: 0,
         },
@@ -256,7 +256,7 @@ Extract the complete structured dossier according to the JSON schema. Ensure the
           responseMimeType: "application/json",
           responseSchema: geminiSchema as any,
           temperature: 0.1,
-          maxOutputTokens: 8192,
+          maxOutputTokens: 16384,
           thinkingConfig: {
             thinkingBudget: 0,
           },
@@ -270,8 +270,14 @@ Extract the complete structured dossier according to the JSON schema. Ensure the
       tokensUsed.total += retryResponse.usageMetadata.totalTokenCount || 0;
     }
 
-    const retryJson = retryResponse.text || "{}";
-    parsed = ExtractionOutputSchema.parse(JSON.parse(retryJson));
+    try {
+      const retryJson = retryResponse.text || "{}";
+      parsed = ExtractionOutputSchema.parse(JSON.parse(retryJson));
+    } catch (retryErr: any) {
+      const msg = retryErr?.message || String(retryErr);
+      console.error(`[Gemini Extraction] Retry schema validation failed: ${msg}`);
+      throw new Error(`Schema validation failed on retry: ${msg}`);
+    }
   }
 
   return {

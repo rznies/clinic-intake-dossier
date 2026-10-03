@@ -1,21 +1,25 @@
 import { ExtractionOutput, FieldStatus } from "../types/dossier.js";
 import { ScrapedPage } from "../scraper/fetcher.js";
 
+export type DowngradeCategory = "quote_not_found" | "phone_digits_derived" | "value_token_missing";
+
 export interface DowngradeRecord {
   field: string;
   originalStatus: FieldStatus;
   newStatus: FieldStatus;
-  reason: string;
+  category: DowngradeCategory;
   normalizedQuote: string;
   nearestSnippet: string;
-  classification: "real_fabrication" | "formatting_or_subtle_mismatch";
   details: string;
 }
 
 export interface VerificationStats {
   totalDowngrades: number;
-  realFabricationsCount: number;
-  formattingMismatchesCount: number;
+  categoryCounts: {
+    quote_not_found: number;
+    phone_digits_derived: number;
+    value_token_missing: number;
+  };
   fieldDowngrades: DowngradeRecord[];
 }
 
@@ -60,10 +64,10 @@ function countWords(str: string): number {
 /**
  * Finds the nearest matching snippet on the page around the quote words.
  */
-function findNearestPageSnippet(normQuote: string, normPageText: string): { snippet: string; isLikelyFormatting: boolean } {
+function findNearestPageSnippet(normQuote: string, normPageText: string): { snippet: string } {
   const words = normQuote.split(" ").filter((w) => w.length > 2);
   if (words.length === 0) {
-    return { snippet: "[Quote contains no words > 2 chars]", isLikelyFormatting: false };
+    return { snippet: "[Quote contains no words > 2 chars]" };
   }
 
   // 1. Try finding 3-word prefix
@@ -74,7 +78,6 @@ function findNearestPageSnippet(normQuote: string, normPageText: string): { snip
     const end = Math.min(normPageText.length, idx + searchPrefix.length + 80);
     return {
       snippet: `...${normPageText.slice(start, end)}...`,
-      isLikelyFormatting: true,
     };
   }
 
@@ -87,13 +90,11 @@ function findNearestPageSnippet(normQuote: string, normPageText: string): { snip
     const end = Math.min(normPageText.length, longIdx + longestWord.length + 80);
     return {
       snippet: `[anchor: "${longestWord}"] ...${normPageText.slice(start, end)}...`,
-      isLikelyFormatting: false,
     };
   }
 
   return {
     snippet: "[No matching text found on page]",
-    isLikelyFormatting: false,
   };
 }
 
@@ -209,7 +210,7 @@ function extractUrlsFromValue(obj: any): string[] {
  * - Accepts 1 to 3 short evidence quotes per field; all must match that field's own source page.
  * - Value token checks: apply only to phone numbers (digits only) and emails. Never extract digits from URLs/images.
  * - Checks URLs by domain and path presence in page text, not in the quote.
- * - Returns structured downgrade records classifying real fabrications vs formatting mismatches.
+ * - Categorizes unconfirmed downgrades strictly as: quote_not_found, phone_digits_derived, value_token_missing.
  */
 export function verifyDossierExtraction(
   extraction: ExtractionOutput,
@@ -278,10 +279,9 @@ export function verifyDossierExtraction(
         field: key,
         originalStatus: "FOUND",
         newStatus: "INFERRED",
-        reason: "missing_quote",
+        category: "quote_not_found",
         normalizedQuote: "",
         nearestSnippet: "None",
-        classification: "real_fabrication",
         details: "Field marked FOUND has no evidence quotes.",
       });
       continue;
@@ -298,10 +298,9 @@ export function verifyDossierExtraction(
           field: key,
           originalStatus: "FOUND",
           newStatus: "INFERRED",
-          reason: "quote_too_long",
+          category: "quote_not_found",
           normalizedQuote: normalizeText(q),
           nearestSnippet: `Word count: ${words}`,
-          classification: "formatting_or_subtle_mismatch",
           details: `Quote exceeds 25 words (${words} words): "${q.slice(0, 50)}..."`,
         });
         break;
@@ -317,10 +316,9 @@ export function verifyDossierExtraction(
         field: key,
         originalStatus: "FOUND",
         newStatus: "INFERRED",
-        reason: "quote_not_in_page",
+        category: "quote_not_found",
         normalizedQuote: normalizeText(quotes[0]),
         nearestSnippet: "No source_url provided",
-        classification: "real_fabrication",
         details: "Field has quotes but no source_url.",
       });
       continue;
@@ -335,10 +333,9 @@ export function verifyDossierExtraction(
         field: key,
         originalStatus: "FOUND",
         newStatus: "INFERRED",
-        reason: "quote_not_in_page",
+        category: "quote_not_found",
         normalizedQuote: normalizeText(quotes[0]),
         nearestSnippet: `Source page ${sourceUrl} was not scraped`,
-        classification: "real_fabrication",
         details: `Source URL ${sourceUrl} was not among scraped pages.`,
       });
       continue;
@@ -350,17 +347,15 @@ export function verifyDossierExtraction(
       if (!pageEntry.normalized.includes(normQ)) {
         allQuotesMatch = false;
         const nearest = findNearestPageSnippet(normQ, pageEntry.normalized);
-        const classification = nearest.isLikelyFormatting ? "formatting_or_subtle_mismatch" : "real_fabrication";
 
         field.status = "INFERRED";
         fieldDowngrades.push({
           field: key,
           originalStatus: "FOUND",
           newStatus: "INFERRED",
-          reason: "quote_not_in_page",
+          category: "quote_not_found",
           normalizedQuote: normQ,
           nearestSnippet: nearest.snippet,
-          classification,
           details: `Quote "${q}" is not present on source page ${sourceUrl}. Nearest: ${nearest.snippet}`,
         });
         break;
@@ -385,10 +380,9 @@ export function verifyDossierExtraction(
           field: key,
           originalStatus: "FOUND",
           newStatus: "INFERRED",
-          reason: "phone_not_in_quote",
+          category: "phone_digits_derived",
           normalizedQuote: normalizeText(quotes.join(" ")),
           nearestSnippet: `Phone digits ${pDigits} missing from quotes digits [${quotesDigits}]`,
-          classification: "real_fabrication",
           details: `Phone number digits [${pDigits}] appear in value but are absent from evidence quotes.`,
         });
         break;
@@ -408,10 +402,9 @@ export function verifyDossierExtraction(
           field: key,
           originalStatus: "FOUND",
           newStatus: "INFERRED",
-          reason: "email_not_in_quote",
+          category: "value_token_missing",
           normalizedQuote: normalizeText(quotes.join(" ")),
           nearestSnippet: `Email ${email} missing from quotes`,
-          classification: "real_fabrication",
           details: `Email [${email}] appears in value but is absent from evidence quotes.`,
         });
         break;
@@ -438,10 +431,9 @@ export function verifyDossierExtraction(
             field: key,
             originalStatus: "FOUND",
             newStatus: "INFERRED",
-            reason: "url_not_in_page",
+            category: "value_token_missing",
             normalizedQuote: domain,
             nearestSnippet: `URL [domain: ${domain}, path: ${rawPath || "/"}] not found in source page text`,
-            classification: "real_fabrication",
             details: `URL ${u} (domain/path) is not present in the source page text.`,
           });
           break;
@@ -452,7 +444,7 @@ export function verifyDossierExtraction(
     }
     if (missingUrlOnPage) continue;
 
-    // 4d. Doctor marketing claims check
+    // 4d. Doctor qualifications and claims check
     if (key === "doctor_name_and_qualifications" && Array.isArray(field.value)) {
       for (const doc of field.value) {
         if (!doc) continue;
@@ -473,9 +465,22 @@ export function verifyDossierExtraction(
             doc.title = parts[0].trim();
           }
         }
-        if (!Array.isArray(doc.qualifications)) {
+
+        // Doctor qualifications check:
+        // "if a qualification string (for example 'DDS') does not appear in the doctor's page text, drop it or mark INFERRED."
+        if (Array.isArray(doc.qualifications) && doc.qualifications.length > 0) {
+          const validQuals: string[] = [];
+          for (const qual of doc.qualifications) {
+            const normQual = normalizeText(qual);
+            if (normQual && (pageEntry.normalized.includes(normQual) || pageEntry.raw.toLowerCase().includes(qual.toLowerCase()))) {
+              validQuals.push(qual);
+            }
+          }
+          doc.qualifications = validQuals;
+        } else {
           doc.qualifications = [];
         }
+
         if (doc.quote && typeof doc.quote === "string") {
           const normDocQ = normalizeText(doc.quote);
           if (normDocQ && !pageEntry.normalized.includes(normDocQ)) {
@@ -497,7 +502,6 @@ export function verifyDossierExtraction(
       if (faqPage && faqPage.normalized.includes(normalizeText(faq.evidence_quote))) {
         verifiedFaqs.push(faq);
       } else {
-        // If not grounded on that page, convert to inferred gap
         fields.patient_faqs.gaps.push({
           question: faq.question,
           status: "INFERRED",
@@ -507,15 +511,19 @@ export function verifyDossierExtraction(
     fields.patient_faqs.answered_on_site = verifiedFaqs;
   }
 
-  const realFabricationsCount = fieldDowngrades.filter((d) => d.classification === "real_fabrication").length;
-  const formattingMismatchesCount = fieldDowngrades.filter((d) => d.classification === "formatting_or_subtle_mismatch").length;
+  const quoteNotFoundCount = fieldDowngrades.filter((d) => d.category === "quote_not_found").length;
+  const phoneDigitsDerivedCount = fieldDowngrades.filter((d) => d.category === "phone_digits_derived").length;
+  const valueTokenMissingCount = fieldDowngrades.filter((d) => d.category === "value_token_missing").length;
 
   return {
     verifiedFields: fields,
     stats: {
       totalDowngrades: fieldDowngrades.length,
-      realFabricationsCount,
-      formattingMismatchesCount,
+      categoryCounts: {
+        quote_not_found: quoteNotFoundCount,
+        phone_digits_derived: phoneDigitsDerivedCount,
+        value_token_missing: valueTokenMissingCount,
+      },
       fieldDowngrades,
     },
   };

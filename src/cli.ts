@@ -82,10 +82,10 @@ async function main() {
   // 4. Code Verifier (Deterministic, NO LLM)
   console.log(`\n[4/4] Running Verifier, Hook Linter & Gap Engine (Code, not LLM)...`);
   const verificationResult = verifyDossierExtraction(extractionResult.extraction, scrapeResult.pages);
-  console.log(`Verifier complete: ${verificationResult.stats.totalDowngrades} downgrades recorded (Real: ${verificationResult.stats.realFabricationsCount}, Formatting: ${verificationResult.stats.formattingMismatchesCount}).`);
+  console.log(`Verifier complete: ${verificationResult.stats.totalDowngrades} downgrades recorded (quote_not_found: ${verificationResult.stats.categoryCounts.quote_not_found}, phone_digits_derived: ${verificationResult.stats.categoryCounts.phone_digits_derived}, value_token_missing: ${verificationResult.stats.categoryCounts.value_token_missing}).`);
   if (verificationResult.stats.fieldDowngrades.length > 0) {
     verificationResult.stats.fieldDowngrades.forEach((d) => {
-      console.log(`  Downgrade [${d.field}]: ${d.originalStatus} -> ${d.newStatus} [${d.classification}] (${d.reason}) - ${d.details}`);
+      console.log(`  Downgrade [${d.field}]: ${d.originalStatus} -> ${d.newStatus} [${d.category}] - ${d.details}`);
     });
   }
 
@@ -132,11 +132,11 @@ async function main() {
       const devlogPath = path.resolve(process.cwd(), "DEVLOG.md");
       const timestamp = new Date().toISOString();
       let devlogSection = `\n\n### Verifier Downgrade Audit: ${targetUrl} (${timestamp})\n`;
-      devlogSection += `Total downgrades: ${verificationResult.stats.totalDowngrades} (Real fabrications: ${verificationResult.stats.realFabricationsCount}, Formatting/subtle mismatches: ${verificationResult.stats.formattingMismatchesCount})\n\n`;
-      devlogSection += `| Field | Status Change | Classification | Reason | Normalized Quote | Nearest Snippet on Page |\n`;
-      devlogSection += `| :--- | :--- | :--- | :--- | :--- | :--- |\n`;
+      devlogSection += `Total downgrades: ${verificationResult.stats.totalDowngrades} (quote_not_found: ${verificationResult.stats.categoryCounts.quote_not_found}, phone_digits_derived: ${verificationResult.stats.categoryCounts.phone_digits_derived}, value_token_missing: ${verificationResult.stats.categoryCounts.value_token_missing}) - unconfirmed until manual check\n\n`;
+      devlogSection += `| Field | Status Change | Category | Normalized Quote | Nearest Snippet on Page |\n`;
+      devlogSection += `| :--- | :--- | :--- | :--- | :--- |\n`;
       for (const d of verificationResult.stats.fieldDowngrades) {
-        devlogSection += `| **${d.field}** | ${d.originalStatus} &rarr; ${d.newStatus} | \`${d.classification}\` | ${d.reason} | \`${d.normalizedQuote.slice(0, 45)}\` | ${d.nearestSnippet.replace(/\|/g, "\\|").slice(0, 80)} |\n`;
+        devlogSection += `| **${d.field}** | ${d.originalStatus} &rarr; ${d.newStatus} | \`${d.category}\` | \`${d.normalizedQuote.slice(0, 45)}\` | ${d.nearestSnippet.replace(/\|/g, "\\|").slice(0, 80)} |\n`;
       }
       await fs.appendFile(devlogPath, devlogSection, "utf8");
     } catch (err: any) {
@@ -162,17 +162,17 @@ async function main() {
     summary_counts: gapResult.summaryCounts,
     downgrade_summary: {
       total_downgrades: verificationResult.stats.totalDowngrades,
-      real_fabrications: verificationResult.stats.realFabricationsCount,
-      formatting_mismatches: verificationResult.stats.formattingMismatchesCount,
+      quote_not_found: verificationResult.stats.categoryCounts.quote_not_found,
+      phone_digits_derived: verificationResult.stats.categoryCounts.phone_digits_derived,
+      value_token_missing: verificationResult.stats.categoryCounts.value_token_missing,
     },
     downgrades_detail: verificationResult.stats.fieldDowngrades.map((d) => ({
       field: d.field,
       originalStatus: d.originalStatus,
       newStatus: d.newStatus,
-      reason: d.reason,
+      category: d.category,
       normalizedQuote: d.normalizedQuote,
       nearestSnippet: d.nearestSnippet,
-      classification: d.classification,
       details: d.details,
     })),
     fields: verificationResult.verifiedFields,
@@ -212,7 +212,10 @@ async function main() {
   console.log(`========================================\n`);
 }
 
-main().catch((err) => {
-  console.error("\n[FATAL ERROR]", err);
+main().catch((err: any) => {
+  console.error("\n[FATAL ERROR]", err?.message || String(err));
+  if (err?.stack) {
+    console.error(err.stack);
+  }
   process.exit(1);
 });

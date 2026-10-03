@@ -31,7 +31,7 @@ export const DoctorItemSchema = z.object({
 export const DoctorFieldSchema = createFieldSchema(z.array(DoctorItemSchema).max(8).default([]));
 
 // 3. Specialty
-export const SpecialtyFieldSchema = createFieldSchema(z.array(z.string()).max(4).default([]));
+export const SpecialtyFieldSchema = createFieldSchema(z.array(z.string()).default([]));
 
 // 4. Services / Procedures
 export const ServiceItemSchema = z.object({
@@ -205,17 +205,17 @@ export interface DossierRecord {
   };
   downgrade_summary: {
     total_downgrades: number;
-    real_fabrications: number;
-    formatting_mismatches: number;
+    quote_not_found: number;
+    phone_digits_derived: number;
+    value_token_missing: number;
   };
   downgrades_detail: Array<{
     field: string;
     originalStatus: string;
     newStatus: string;
-    reason: string;
+    category: "quote_not_found" | "phone_digits_derived" | "value_token_missing";
     normalizedQuote: string;
     nearestSnippet: string;
-    classification: string;
     details: string;
   }>;
   fields: ExtractionOutput;

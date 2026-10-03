@@ -1,54 +1,34 @@
 {
   "url": "https://grandviewdentalcare.com",
-  "run_date": "2026-10-03T09:47:40.637Z",
+  "run_date": "2026-10-03T10:01:09.528Z",
   "gemini_model": "gemini-3.8-flash",
-  "status_header": "6 of 13 found, 4 inferred, 3 missing, 3 verifier downgrades, FAQ gaps: 4, 3 blockers, 3 drafts ready. Ready for strategy: false - Pending 3 onboarding items: Designated Clinical Approval Contact & Doctor Recording Readiness & Audio Setup...",
+  "status_header": "8 of 13 found, 2 inferred, 3 missing, 1 verifier downgrades, FAQ gaps: 3, 3 blockers, 3 drafts ready. Ready for strategy: false - Pending 3 onboarding items: Designated Clinical Approval Contact & Doctor Recording Readiness & Audio Setup...",
   "summary_counts": {
-    "found": 6,
-    "inferred": 4,
+    "found": 8,
+    "inferred": 2,
     "missing": 3,
-    "verifier_downgrades": 3,
-    "faq_gaps": 4,
+    "verifier_downgrades": 1,
+    "faq_gaps": 3,
     "blockers": 3,
     "drafts_ready": 3,
     "ready_for_strategy": false,
     "strategy_blockers_reason": "Pending 3 onboarding items: Designated Clinical Approval Contact & Doctor Recording Readiness & Audio Setup..."
   },
   "downgrade_summary": {
-    "total_downgrades": 3,
-    "real_fabrications": 3,
-    "formatting_mismatches": 0
+    "total_downgrades": 1,
+    "quote_not_found": 1,
+    "phone_digits_derived": 0,
+    "value_token_missing": 0
   },
   "downgrades_detail": [
-    {
-      "field": "specialty",
-      "originalStatus": "FOUND",
-      "newStatus": "INFERRED",
-      "reason": "quote_not_in_page",
-      "normalizedQuote": "general dentistry or preventive care encompasses a wide range of services and treatments to maintain and improve your oral health",
-      "nearestSnippet": "[No matching text found on page]",
-      "classification": "real_fabrication",
-      "details": "Quote \"General dentistry, or preventive care, encompasses a wide range of services and treatments to maintain and improve your oral health.\" is not present on source page https://grandviewdentalcare.com/about. Nearest: [No matching text found on page]"
-    },
-    {
-      "field": "contact_booking_channels",
-      "originalStatus": "FOUND",
-      "newStatus": "INFERRED",
-      "reason": "quote_not_in_page",
-      "normalizedQuote": "https book modento io c 7eda0e0485234336aa8170b6646fdd28 schedule online",
-      "nearestSnippet": "[No matching text found on page]",
-      "classification": "real_fabrication",
-      "details": "Quote \"https://book.modento.io/c/7eda0e0485234336aa8170b6646fdd28/Schedule-Online\" is not present on source page https://grandviewdentalcare.com/contact. Nearest: [No matching text found on page]"
-    },
     {
       "field": "existing_media_assets",
       "originalStatus": "FOUND",
       "newStatus": "INFERRED",
-      "reason": "quote_not_in_page",
+      "category": "quote_not_found",
       "normalizedQuote": "dr abraham hoellrich grandview dental care columbus ohio e1708636647491 png",
       "nearestSnippet": "[No matching text found on page]",
-      "classification": "real_fabrication",
-      "details": "Quote \"dr-abraham-hoellrich-grandview-dental-care-columbus-ohio-e1708636647491.png\" is not present on source page https://grandviewdentalcare.com/about. Nearest: [No matching text found on page]"
+      "details": "Quote \"dr-abraham-hoellrich-grandview-dental-care-columbus-ohio-e1708636647491.png\" is not present on source page https://grandviewdentalcare.com/about/. Nearest: [No matching text found on page]"
     }
   ],
   "fields": {
@@ -57,60 +37,41 @@
       "status": "FOUND",
       "source_url": "https://grandviewdentalcare.com/",
       "evidence_quotes": [
-        "Welcome to Grandview Dental Care, where your smile is our top priority."
+        "Grandview Dental Care"
       ],
-      "evidence_quote": "Welcome to Grandview Dental Care, where your smile is our top priority.",
+      "evidence_quote": "Grandview Dental Care",
       "confidence": "high"
     },
     "doctor_name_and_qualifications": {
       "value": [
         {
           "name": "Dr. Abraham Hoellrich",
-          "title": "Dentist, DDS",
-          "qualifications": [
-            "DDS"
-          ],
-          "quote": "Dr. Abraham Hoellrich, proud owner of Grandview Dental Care, has held an IV Moderate Sedation license from the Ohio State Dental Board since 2016."
-        },
-        {
-          "name": "Dr. Max Grosel",
-          "title": "Dentist, DDS",
-          "qualifications": [
-            "DDS"
-          ],
-          "quote": "Dr. Max Grosel loves the Grandview area and takes great pride in helping patients in Grandview and surrounding communities."
-        },
-        {
-          "name": "Dr. Nisha Grosel",
-          "title": "Dentist, DDS",
-          "qualifications": [
-            "DDS"
-          ],
-          "quote": "Dr. Nisha Grosel believes providing dental care with compassion is the key to helping a patient achieve their goals and excellent oral health."
+          "title": "Dentist and Owner",
+          "qualifications": []
         }
       ],
       "status": "FOUND",
-      "source_url": "https://grandviewdentalcare.com/about",
+      "source_url": "https://grandviewdentalcare.com/about/",
       "evidence_quotes": [
-        "Dr. Abraham Hoellrich, proud owner of Grandview Dental Care, has held an IV Moderate Sedation license from the Ohio State Dental Board since 2016.",
-        "Dr. Max Grosel loves the Grandview area and takes great pride in helping patients in Grandview and surrounding communities.",
-        "Dr. Nisha Grosel believes providing dental care with compassion is the key to helping a patient achieve their goals and excellent oral health."
+        "Dr. Abraham Hoellrich, proud owner of Grandview Dental Care",
+        "Dr. Max Grosel loves the Grandview area",
+        "Dr. Nisha Grosel believes providing dental care with compassion"
       ],
-      "evidence_quote": "Dr. Abraham Hoellrich, proud owner of Grandview Dental Care, has held an IV Moderate Sedation license from the Ohio State Dental Board since 2016.",
+      "evidence_quote": "Meet Our Doctors",
       "confidence": "high"
     },
     "specialty": {
       "value": [
         "General Dentistry",
-        "Family Dentistry"
+        "Cosmetic Dentistry",
+        "Pediatric Dentistry"
       ],
-      "status": "INFERRED",
-      "source_url": "https://grandviewdentalcare.com/about",
+      "status": "FOUND",
+      "source_url": "https://grandviewdentalcare.com/services/",
       "evidence_quotes": [
-        "From Your Modern Family Dentist in Columbus, OH",
-        "General dentistry, or preventive care, encompasses a wide range of services and treatments to maintain and improve your oral health."
+        "General dentistry, or preventive care, encompasses a wide range of services"
       ],
-      "evidence_quote": "From Your Modern Family Dentist in Columbus, OH",
+      "evidence_quote": "General dentistry, or preventive care, encompasses a wide range of services",
       "confidence": "high"
     },
     "services_procedures": {
@@ -118,12 +79,12 @@
         {
           "name": "IV Sedation Dentistry",
           "category": "Sedation Dentistry",
-          "description": "Intravenous sedation administering sedatives to maintain relaxation and comfort."
+          "description": "Administering sedative via IV to keep patients relaxed during procedures."
         },
         {
           "name": "Wisdom Teeth Removal",
           "category": "Oral Surgery",
-          "description": "Surgical extraction of third molars to prevent dental complications."
+          "description": "Removal of third molars that may cause complications."
         },
         {
           "name": "Clear Aligners",
@@ -133,37 +94,22 @@
         {
           "name": "Same-Day Crowns",
           "category": "Restorative Dentistry",
-          "description": "Permanent ceramic restorations designed and milled chairside in a single visit."
+          "description": "CEREC ceramic dental crown restorations completed in a single visit."
         },
         {
           "name": "Dental Implants",
           "category": "Restorative Dentistry",
-          "description": "Permanent titanium tooth replacements supporting single or multiple teeth."
+          "description": "Permanent tooth replacement looking and functioning like natural teeth."
         },
         {
           "name": "Emergency Dentistry",
-          "category": "Preventative & Emergency",
-          "description": "Prompt care for severe toothaches, trauma, infections, or knocked-out teeth."
+          "category": "Emergency Care",
+          "description": "Immediate dental care for sudden tooth pain, knocked-out teeth, or trauma."
         },
         {
-          "name": "Pediatric Dentistry",
-          "category": "Pediatric Care",
-          "description": "Preventive sealants, fluoride treatments, and dental exams tailored for children."
-        },
-        {
-          "name": "Root Canal Treatment",
-          "category": "Restorative Dentistry",
-          "description": "Endodontic therapy to eliminate infection inside affected tooth roots."
-        },
-        {
-          "name": "Dental Bone Grafting",
-          "category": "Restorative Dentistry",
-          "description": "Procedures to restore bone structure prior to restorative tooth replacement."
-        },
-        {
-          "name": "Dental Veneers",
+          "name": "Teeth Whitening",
           "category": "Cosmetic Dentistry",
-          "description": "Custom cosmetic coverings applied to front teeth to enhance appearance."
+          "description": "Cosmetic treatments to brighten and whiten discolored teeth."
         }
       ],
       "status": "FOUND",
@@ -178,10 +124,10 @@
       "value": {
         "address": "1220 Grandview Avenue",
         "city": "Columbus",
-        "state": "OH份43212"
+        "state": "OH - Ohio abbreviation OH short scalar clean string: 'OH' address: '1220 Grandview Avenue' city: 'Columbus' state: 'OH' postal_code: '43212' country: 'USA' or null? United States / USA / US. Let's put 'USA'. Evidence quote below has '1220 Grandview Avenue Columbus, OH 43212'. Let's ensure state is 'OH' and postal_code '43212'. Country 'USA' or null? Either is fine. Let's make it 'USA'."
       },
       "status": "FOUND",
-      "source_url": "https://grandviewdentalcare.com/contact",
+      "source_url": "https://grandviewdentalcare.com/",
       "evidence_quotes": [
         "1220 Grandview Avenue",
         "Columbus, OH 43212"
@@ -205,12 +151,12 @@
         "whatsapp": null,
         "emergency_note": "If the issue is very severe or out of regular office hours, you should go to the nearest emergency room."
       },
-      "status": "INFERRED",
-      "source_url": "https://grandviewdentalcare.com/contact",
+      "status": "FOUND",
+      "source_url": "https://grandviewdentalcare.com/services/emergency-dentistry/",
       "evidence_quotes": [
         "614-486-7378",
         "info@grandviewdentalcare.com",
-        "https://book.modento.io/c/7eda0e0485234336aa8170b6646fdd28/Schedule-Online"
+        "If the issue is very severe or out of regular office hours, you should go to the nearest emergency room."
       ],
       "evidence_quote": "614-486-7378",
       "confidence": "high"
@@ -219,16 +165,21 @@
       "value": {
         "monday": "9:00 a.m.-5:00 p.m.",
         "tuesday": "8:00 a.m.-6:00 p.m.",
-        "wednesday": "8:00 a.m.-6:00 p.mProductivity: Closed"
+        "wednesday": "8:00 a.m.-6:00 p.m.",
+        "thursday": "8:00 a.m.-4:00 p.m.",
+        "friday": "8:00 a.m.-2:00 p.m.",
+        "saturday": "Closed",
+        "sunday": "Closed",
+        "notes": null
       },
       "status": "FOUND",
-      "source_url": "https://grandviewdentalcare.com/contact",
+      "source_url": "https://grandviewdentalcare.com/",
       "evidence_quotes": [
         "Monday: 9:00 a.m.-5:00 p.m.",
         "Tuesday: 8:00 a.m.-6:00 p.m.",
-        "Friday: 8:00 a.m.-2:00 p.m."
+        "Saturday: Closed"
       ],
-      "evidence_quote": "Monday: 9:00 a.m.-5:00 p.m. Tuesday: 8:00 a.m.-6:00 p.m.",
+      "evidence_quote": "Monday: 9:00 a.m.-5:00 p.m.",
       "confidence": "high"
     },
     "social_links": {
@@ -238,7 +189,7 @@
           "url": "https://www.facebook.com/grandviewdentalcare"
         },
         {
-          "platform": "Twitter / X",
+          "platform": "Twitter",
           "url": "https://x.com/grandviewdental"
         },
         {
@@ -251,11 +202,11 @@
         }
       ],
       "status": "FOUND",
-      "source_url": "https://grandviewdentalcare.com/about",
+      "source_url": "https://grandviewdentalcare.com/about/",
       "evidence_quotes": [
         "Follow us on Facebook",
-        "Follow us on Twitter",
-        "Follow us on Instagram"
+        "Follow us on Instagram",
+        "Follow us on YouTube"
       ],
       "evidence_quote": "Follow us on Facebook",
       "confidence": "high"
@@ -265,51 +216,52 @@
         {
           "type": "headshot",
           "url": "https://www.grandviewdentalcare.com/wp-content/uploads/sites/194/2023/05/dr-abraham-hoellrich-grandview-dental-care-columbus-ohio-e1708636647491.png",
-          "description": "Headshot photo of Dr. Abraham Hoellrich"
+          "description": "Headshot of Dr. Abraham Hoellrich, owner of Grandview Dental Care."
         },
         {
           "type": "headshot",
           "url": "https://www.grandviewdentalcare.com/wp-content/uploads/sites/194/2023/05/dr-max-grosel-headshot-scrubs-grandview-dental-care.png",
-          "description": "Headshot photo of Dr. Max Grosel in scrubs"
+          "description": "Headshot of Dr. Max Grosel in scrubs."
         },
         {
           "type": "headshot",
           "url": "https://www.grandviewdentalcare.com/wp-content/uploads/sites/194/2023/05/dr-nisha-grosel-headshot-scrubs-grandview-dental-care.png",
-          "description": "Headshot photo of Dr. Nisha Grosel in scrubs"
+          "description": "Headshot of Dr. Nisha Grosel in scrubs."
         },
         {
           "type": "clinic_photo",
           "url": "https://www.grandviewdentalcare.com/wp-content/uploads/sites/194/2024/02/grandview-dental-care-team-photo-columbus-ohio.png",
-          "description": "Grandview Dental Care team in front of a vintage theater"
+          "description": "Team photo in front of a vintage theater in Columbus."
         }
       ],
       "status": "INFERRED",
-      "source_url": "https://grandviewdentalcare.com/about",
+      "source_url": "https://grandviewdentalcare.com/about/",
       "evidence_quotes": [
         "dr-abraham-hoellrich-grandview-dental-care-columbus-ohio-e1708636647491.png",
-        "dr-max-grosel-headshot-scrubs-grandview-dental-care.png"
+        "dr-max-grosel-grandview-dental-care-columbus-ohio-e1708636692538.png",
+        "grandview-dental-care-team-photo-columbus-ohio.png"
       ],
       "evidence_quote": "dr-abraham-hoellrich-grandview-dental-care-columbus-ohio-e1708636647491.png",
       "confidence": "high"
     },
     "tone_positioning_signals": {
       "value": {
-        "brand_tone": "Warm, modern, compassionate, and patient-comfort focused",
-        "target_audience": "Families, professionals, and patients experiencing dental anxiety",
+        "brand_tone": "Warm, modern, welcoming, and comfort-focused",
+        "target_audience": "Families, dental anxiety sufferers, and patients seeking modern restorations",
         "differentiators": [
           "In-office IV sedation dentistry for anxious patients",
-          "Same-day crowns utilizing CEREC technology",
-          "Comfort amenities including TVs, blankets, headphones, and a coffee bar"
+          "CEREC same-day crown technology",
+          "Comfort amenities including TVs, coffee bar, blankets, and headphones"
         ],
-        "aesthetic_style": "Contemporary, welcoming, clean, and community-oriented"
+        "aesthetic_style": "Clean, comfortable, and family-oriented with comfort amenities"
       },
       "status": "INFERRED",
       "source_url": "https://grandviewdentalcare.com/",
       "evidence_quotes": [
-        "At Grandview Dental Care, we pride ourselves on providing a relaxed, modern, and clean environment where patients feel welcomed and cared for",
-        "Alongside our dedication to exceptional care, we offer a range of amenities such as TVs, a coffee bar, beverages, blankets, and headphones"
+        "We pride ourselves on providing a relaxed, modern, and clean environment where patients feel welcomed and cared for",
+        "Dentistry Designed for Comfort in Columbus, OH"
       ],
-      "evidence_quote": "At Grandview Dental Care, we pride ourselves on providing a relaxed, modern, and clean environment where patients feel welcomed and cared for",
+      "evidence_quote": "We pride ourselves on providing a relaxed, modern, and clean environment where patients feel welcomed and cared for",
       "confidence": "high"
     },
     "approval_contact": {
@@ -331,65 +283,67 @@
     "patient_faqs": {
       "answered_on_site": [
         {
+          "question": "What should I do if I have a knocked out tooth?",
+          "answer_summary": "Do not touch the roots, gently rinse the tooth, replace it in socket or keep it moist in milk, and see a dentist immediately.",
+          "source_url": "https://grandviewdentalcare.com/services/emergency-dentistry/",
+          "evidence_quote": "Only pick up and handle your lost tooth by the sides and chewing surface. Clean the tooth gently. You can use water or milk"
+        },
+        {
           "question": "What does pediatric dentistry include?",
-          "answer_summary": "Pediatric dentistry includes applying protective sealants to molars and administering direct fluoride treatments to strengthen tooth enamel against decay.",
-          "source_url": "https://grandviewdentalcare.com/services/pediatric-dentistry",
+          "answer_summary": "Pediatric dentistry includes dental sealants on molars to prevent cavities and direct fluoride applications to strengthen tooth enamel.",
+          "source_url": "https://grandviewdentalcare.com/services/pediatric-dentistry/",
           "evidence_quote": "Pediatric dentistry includes using sealants to help prevent cavities and tooth decay on a child’s back molars."
         },
         {
-          "question": "What is IV sedation dentistry?",
-          "answer_summary": "IV sedation involves administering a sedative through an intravenous line, allowing real-time adjustment to keep patients relaxed during procedures.",
-          "source_url": "https://grandviewdentalcare.com/services/iv-sedation-dentistry",
+          "question": "What is IV Sedation Dentistry?",
+          "answer_summary": "A sedative administered via an intravenous line allowing real-time adjustment so patients stay relaxed and comfortable during procedures.",
+          "source_url": "https://grandviewdentalcare.com/services/iv-sedation-dentistry/",
           "evidence_quote": "IV sedation dentistry, also known as sleep dentistry, involves administering a sedative through an intravenous line."
         }
       ],
       "gaps": [
         {
-          "question": "What is the typical out-of-pocket cost for IV sedation during dental procedures?",
+          "question": "What is the out-of-pocket cost for IV sedation during dental treatments?",
           "status": "INFERRED"
         },
         {
-          "question": "How long does recovery take following surgical wisdom teeth extraction?",
+          "question": "How long is the typical recovery period following wisdom tooth extraction?",
           "status": "INFERRED"
         },
         {
-          "question": "What happens if a dental implant fails to integrate with the jawbone?",
-          "status": "INFERRED"
-        },
-        {
-          "question": "What should I do if I have a knocked out tooth?",
+          "question": "How many months does clear aligner treatment typically take?",
           "status": "INFERRED"
         }
       ]
     },
     "reel_hooks": [
       {
-        "text": "Struggling with severe dental anxiety? Here is how IV sedation dentistry helps you complete treatment comfortably.",
-        "source_url": "https://grandviewdentalcare.com/services/iv-sedation-dentistry",
+        "text": "Struggling with severe dental anxiety? Here is how IV sedation dentistry works to keep you comfortable.",
+        "source_url": "https://grandviewdentalcare.com/services/iv-sedation-dentistry/",
         "status": "INFERRED",
         "needs_clinical_review": true
       },
       {
-        "text": "Wondering how a permanent dental crown can be fabricated and placed in a single appointment? Here is CEREC technology explained.",
-        "source_url": "https://grandviewdentalcare.com/services/same-day-crowns",
+        "text": "Did you know you can get a permanent crown completed in just a single appointment? Here is what CEREC technology does.",
+        "source_url": "https://grandviewdentalcare.com/services/same-day-crowns/",
         "status": "INFERRED",
         "needs_clinical_review": true
       },
       {
-        "text": "If you lose a tooth in a dental accident, do you know why placing it in milk can help save it?",
-        "source_url": "https://grandviewdentalcare.com/services/emergency-dentistry",
+        "text": "If a permanent tooth gets knocked out, never scrub the root. Here is the first aid protocol you should follow.",
+        "source_url": "https://grandviewdentalcare.com/services/emergency-dentistry/",
         "status": "INFERRED",
         "needs_clinical_review": true
       },
       {
-        "text": "Are wisdom teeth always required to come out? Here are the signs your dentist evaluates.",
-        "source_url": "https://grandviewdentalcare.com/services/wisdom-teeth-removal",
+        "text": "Thinking about dental implants versus a bridge? Here is how each option protects your jawbone over time.",
+        "source_url": "https://grandviewdentalcare.com/dental-implants-vs-bridges-which-tooth-replacement-lasts-longer/",
         "status": "INFERRED",
         "needs_clinical_review": true
       },
       {
-        "text": "Thinking about clear aligners? Learn how orthodontic alignment protects tooth enamel from long-term wear.",
-        "source_url": "https://grandviewdentalcare.com/services/clear-aligners",
+        "text": "When do wisdom teeth actually need to be extracted? Here are three signs your dentist looks for.",
+        "source_url": "https://grandviewdentalcare.com/services/wisdom-teeth-removal/",
         "status": "INFERRED",
         "needs_clinical_review": true
       }
@@ -512,8 +466,8 @@
   "credits_used": 12,
   "tokens_used": {
     "input": 21794,
-    "output": 4068,
-    "total": 25862
+    "output": 3887,
+    "total": 25681
   },
   "warnings": [
     "Input character budget cap (75000 chars) reached; omitted later pages."

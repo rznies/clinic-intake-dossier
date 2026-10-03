@@ -1,6 +1,6 @@
 {
   "url": "https://apexskin.com",
-  "run_date": "2026-10-03T09:49:59.225Z",
+  "run_date": "2026-10-03T10:05:35.261Z",
   "gemini_model": "gemini-3.8-flash",
   "status_header": "4 of 13 found, 5 inferred, 4 missing, 4 verifier downgrades, FAQ gaps: 3, 2 blockers, 2 drafts ready. Ready for strategy: false - Pending 2 onboarding items: Designated Clinical Approval Contact & Doctor Recording Readiness & Audio Setup",
   "summary_counts": {
@@ -16,48 +16,45 @@
   },
   "downgrade_summary": {
     "total_downgrades": 4,
-    "real_fabrications": 4,
-    "formatting_mismatches": 0
+    "quote_not_found": 3,
+    "phone_digits_derived": 1,
+    "value_token_missing": 0
   },
   "downgrades_detail": [
     {
-      "field": "specialty",
+      "field": "doctor_name_and_qualifications",
       "originalStatus": "FOUND",
       "newStatus": "INFERRED",
-      "reason": "quote_not_in_page",
-      "normalizedQuote": "dermatology aesthetic skin care services",
-      "nearestSnippet": "[anchor: \"dermatology\"] ...ment opportunities provider recruitment dermatology services all dermatology services pediatric dermatology skin cancer skin cancer...",
-      "classification": "real_fabrication",
-      "details": "Quote \"Dermatology & Aesthetic Skin Care Services\" is not present on source page https://apexskin.com/. Nearest: [anchor: \"dermatology\"] ...ment opportunities provider recruitment dermatology services all dermatology services pediatric dermatology skin cancer skin cancer..."
+      "category": "quote_not_found",
+      "normalizedQuote": "kyle kelly pa c",
+      "nearestSnippet": "[No matching text found on page]",
+      "details": "Quote \"Kyle Kelly PA-C\" is not present on source page https://apexskin.com/about-us. Nearest: [No matching text found on page]"
     },
     {
       "field": "contact_booking_channels",
       "originalStatus": "FOUND",
       "newStatus": "INFERRED",
-      "reason": "phone_not_in_quote",
-      "normalizedQuote": "call now 833 279 skin same day dermatology appointments are available for urgent needs",
+      "category": "phone_digits_derived",
+      "normalizedQuote": "for general questions or help to schedule a dermatologist appointment call 833 279 skin same day dermatology appointments are available to address your urgent needs",
       "nearestSnippet": "Phone digits 8332797546 missing from quotes digits [833279 ]",
-      "classification": "real_fabrication",
       "details": "Phone number digits [8332797546] appear in value but are absent from evidence quotes."
     },
     {
       "field": "social_links",
       "originalStatus": "FOUND",
       "newStatus": "INFERRED",
-      "reason": "quote_not_in_page",
+      "category": "quote_not_found",
       "normalizedQuote": "https www facebook com apex dermatology 236807683025666",
       "nearestSnippet": "[No matching text found on page]",
-      "classification": "real_fabrication",
       "details": "Quote \"https://www.facebook.com/Apex-Dermatology-236807683025666/\" is not present on source page https://apexskin.com/. Nearest: [No matching text found on page]"
     },
     {
       "field": "existing_media_assets",
       "originalStatus": "FOUND",
       "newStatus": "INFERRED",
-      "reason": "quote_not_in_page",
+      "category": "quote_not_found",
       "normalizedQuote": "https www apexskin com wp content uploads 2023 04 apex logo 159 png",
       "nearestSnippet": "[No matching text found on page]",
-      "classification": "real_fabrication",
       "details": "Quote \"https://www.apexskin.com/wp-content/uploads/2023/04/Apex_Logo_159.png\" is not present on source page https://apexskin.com/about-us. Nearest: [No matching text found on page]"
     }
   ],
@@ -79,12 +76,65 @@
           "title": "Founder and President",
           "qualifications": [],
           "quote": "A Letter from Dr. Garcia-Zuazaga, Founder and President of Apex Skin"
+        },
+        {
+          "name": "Kyle Kelly",
+          "title": "Physician Assistant",
+          "qualifications": [
+            "PA-C"
+          ],
+          "quote": "Kyle Kelly PA-C"
+        },
+        {
+          "name": "Lauren Redd",
+          "title": "Physician Assistant",
+          "qualifications": [
+            "PA-C"
+          ],
+          "quote": "Lauren Redd PA-C"
+        },
+        {
+          "name": "Maggie McKernan",
+          "title": "Physician Assistant",
+          "qualifications": [
+            "DMSc",
+            "PA-C"
+          ],
+          "quote": "Maggie McKernan DMSc | PA-C"
+        },
+        {
+          "name": "Megan Sevilla",
+          "title": "Physician Assistant",
+          "qualifications": [
+            "PA-C"
+          ],
+          "quote": "Megan Sevilla PA-C"
+        },
+        {
+          "name": "Melissa A. Vance",
+          "title": "Nurse Practitioner",
+          "qualifications": [
+            "MSN",
+            "FNP-BC",
+            "DCNP"
+          ],
+          "quote": "Melissa A. Vance MSN | FNP-BC | DCNP"
+        },
+        {
+          "name": "Michelle Cheselka",
+          "title": "Physician Assistant",
+          "qualifications": [
+            "PA-C"
+          ],
+          "quote": "Michelle Cheselka PA-C"
         }
       ],
-      "status": "FOUND",
+      "status": "INFERRED",
       "source_url": "https://apexskin.com/about-us",
       "evidence_quotes": [
-        "A Letter from Dr. Garcia-Zuazaga, Founder and President of Apex Skin"
+        "A Letter from Dr. Garcia-Zuazaga, Founder and President of Apex Skin",
+        "Kyle Kelly PA-C",
+        "Maggie McKernan DMSc | PA-C"
       ],
       "evidence_quote": "A Letter from Dr. Garcia-Zuazaga, Founder and President of Apex Skin",
       "confidence": "high"
@@ -92,70 +142,75 @@
     "specialty": {
       "value": [
         "Dermatology",
-        "Skin Surgery",
+        "Mohs Micrographic Surgery",
         "Aesthetic Dermatology"
       ],
-      "status": "INFERRED",
+      "status": "FOUND",
       "source_url": "https://apexskin.com/",
       "evidence_quotes": [
-        "Dermatology & Aesthetic Skin Care Services"
+        "Apex Skin is Northeast Ohio's premier physician-owned dermatology practice, offering same-day access to expert medical, surgical, and aesthetic care"
       ],
-      "evidence_quote": "Dermatology & Aesthetic Skin Care Services",
+      "evidence_quote": "Apex Skin is Northeast Ohio's premier physician-owned dermatology practice, offering same-day access to expert medical, surgical, and aesthetic care",
       "confidence": "high"
     },
     "services_procedures": {
       "value": [
         {
-          "name": "Mohs Skin Cancer Surgery",
-          "category": "Surgical Dermatology",
-          "description": "Micrographic surgery for precise removal of skin cancers."
+          "name": "Full Body Cancer Screening",
+          "category": "Dermatology Services",
+          "description": "Comprehensive screening for skin cancer detection."
         },
         {
-          "name": "Full Body Cancer Screening",
-          "category": "Medical Dermatology",
-          "description": "Comprehensive skin examinations to detect precancerous spots and malignancies."
+          "name": "Mohs Skin Cancer Surgery",
+          "category": "Dermatology Services",
+          "description": "Specialized surgical procedure for removing skin cancer."
         },
         {
           "name": "SPOTcheck",
-          "category": "Medical Dermatology",
-          "description": "Targeted clinical evaluation of suspicious moles or lesions."
+          "category": "Dermatology Services",
+          "description": "Targeted spot examination for suspicious skin lesions."
         },
         {
-          "name": "Acne and Acne Scar Removal",
-          "category": "Medical & Aesthetic Dermatology",
-          "description": "Clinical treatments designed to control active acne breakouts and improve scarring."
+          "name": "Acne Scar Removal",
+          "category": "Dermatology Services",
+          "description": "Clinical treatments for acne and scarring."
         },
         {
-          "name": "Psoriasis and Eczema Treatment",
-          "category": "Medical Dermatology",
-          "description": "Comprehensive medical management for chronic inflammatory skin disorders."
-        },
-        {
-          "name": "Botox and Dysport",
+          "name": "Coolsculpting",
           "category": "Aesthetic Services",
-          "description": "Injectable neuromodulators for wrinkle reduction and facial rejuvenation."
+          "description": "Non-invasive body contouring fat-reduction treatment."
         },
         {
-          "name": "Dermal Fillers",
+          "name": "Chemical Peels",
           "category": "Aesthetic Services",
-          "description": "Cosmetic injectable gels to restore facial volume and contour."
+          "description": "Skin resurfacing treatments including The Perfect Derma Peel."
         },
         {
-          "name": "Coolsculpting and Body Contouring",
+          "name": "Microneedling",
           "category": "Aesthetic Services",
-          "description": "Non-invasive body shaping and fat reduction treatments."
+          "description": "Collagen induction therapy for skin rejuvenation."
         },
         {
-          "name": "Microneedling and Chemical Peels",
+          "name": "Dermaplaning",
           "category": "Aesthetic Services",
-          "description": "Skin resurfacing techniques for texture renewal and collagen induction."
+          "description": "Exfoliation procedure removing dead skin cells and peach fuzz."
+        },
+        {
+          "name": "Fillers",
+          "category": "Aesthetic Services",
+          "description": "Dermal fillers for facial volume restoration."
+        },
+        {
+          "name": "Botox and Injectables",
+          "category": "Aesthetic Services",
+          "description": "Wrinkle relaxers such as Botox and Dysport."
         }
       ],
       "status": "FOUND",
       "source_url": "https://apexskin.com/",
       "evidence_quotes": [
-        "Mohs Skin Cancer Surgery",
         "Full Body Cancer Screening",
+        "Mohs Skin Cancer Surgery",
         "Microneedling"
       ],
       "evidence_quote": "Mohs Skin Cancer Surgery",
@@ -163,19 +218,18 @@
     },
     "location": {
       "value": {
-        "address": "270 East State St., Suite 100",
-        "city": "Alliance",
+        "address": "29111 Cedar Road",
+        "city": "Mayfield Heights",
         "state": "OH",
-        "postal_code": "44601",
+        "postal_code": "44124",
         "country": "USA"
       },
       "status": "FOUND",
-      "source_url": "https://apexskin.com/",
+      "source_url": "https://apexskin.com/contact",
       "evidence_quotes": [
-        "270 East State St., Suite 100",
-        "Alliance, OH 44601"
+        "29111 Cedar Road Mayfield Heights, OH 44124"
       ],
-      "evidence_quote": "270 East State St., Suite 100 Alliance, OH 44601",
+      "evidence_quote": "29111 Cedar Road Mayfield Heights, OH 44124",
       "confidence": "high"
     },
     "languages": {
@@ -192,28 +246,19 @@
         "email": null,
         "booking_url": "https://apexskin.radixhealth.com/dash/self2/#/provider-search",
         "whatsapp": null,
-        "emergency_note": "Same-day dermatology appointments are available for urgent needs."
+        "emergency_note": "Same-day dermatology appointments are available to address your urgent needs."
       },
       "status": "INFERRED",
       "source_url": "https://apexskin.com/contact",
       "evidence_quotes": [
-        "Call Now: 833-279-SKIN",
-        "Same-day dermatology appointments are available for urgent needs."
+        "For general questions or help to schedule a dermatologist appointment, call 833-279-SKIN.",
+        "Same-day dermatology appointments are available to address your urgent needs."
       ],
-      "evidence_quote": "Call Now: 833-279-SKIN",
+      "evidence_quote": "For general questions or help to schedule a dermatologist appointment, call 833-279-SKIN.",
       "confidence": "high"
     },
     "hours": {
-      "value": {
-        "monday": null,
-        "tuesday": null,
-        "wednesday": null,
-        "thursday": null,
-        "friday": null,
-        "saturday": null,
-        "sunday": null,
-        "notes": null
-      },
+      "value": null,
       "status": "MISSING",
       "source_url": null,
       "evidence_quotes": [],
@@ -227,16 +272,16 @@
           "url": "https://www.facebook.com/Apex-Dermatology-236807683025666/"
         },
         {
-          "platform": "instagram",
-          "url": "https://www.instagram.com/apexskin/"
-        },
-        {
           "platform": "linkedin",
           "url": "https://www.linkedin.com/company/apex-dermatology-and-skin-surgery-center"
         },
         {
           "platform": "youtube",
           "url": "https://www.youtube.com/channel/UCqKRaS42bb4N5UzB7mR6fdg"
+        },
+        {
+          "platform": "instagram",
+          "url": "https://www.instagram.com/apexskin/"
         }
       ],
       "status": "INFERRED",
@@ -246,7 +291,7 @@
         "https://www.instagram.com/apexskin/",
         "https://www.linkedin.com/company/apex-dermatology-and-skin-surgery-center"
       ],
-      "evidence_quote": "https://www.facebook.com/Apex-Dermatology-236807683025666/",
+      "evidence_quote": "Facebook page opens in new window",
       "confidence": "high"
     },
     "existing_media_assets": {
@@ -254,12 +299,12 @@
         {
           "type": "logo",
           "url": "https://www.apexskin.com/wp-content/uploads/2023/04/Apex_Logo_159.png",
-          "description": "Apex Skin official clinic logo image"
+          "description": "Apex Skin primary company logo"
         },
         {
           "type": "headshot",
           "url": "https://www.apexskin.com/wp-content/uploads/2016/01/Dr.Garcia-2-Edit-240x300.jpg",
-          "description": "Dr. Garcia-Zuazaga portrait photograph"
+          "description": "Founder Dr. Garcia-Zuazaga headshot portrait"
         }
       ],
       "status": "INFERRED",
@@ -268,26 +313,27 @@
         "https://www.apexskin.com/wp-content/uploads/2023/04/Apex_Logo_159.png",
         "https://www.apexskin.com/wp-content/uploads/2016/01/Dr.Garcia-2-Edit-240x300.jpg"
       ],
-      "evidence_quote": "https://www.apexskin.com/wp-content/uploads/2023/04/Apex_Logo_159.png",
+      "evidence_quote": "Apex Skin",
       "confidence": "high"
     },
     "tone_positioning_signals": {
       "value": {
-        "brand_tone": "Warm, accessible, efficient, and clinically rigorous",
-        "target_audience": "Patients seeking urgent medical dermatology, skin cancer excision, or aesthetic rejuvenation across Northeast Ohio",
+        "brand_tone": "clinical, compassionate, and empowering",
+        "target_audience": "Northeast Ohio patients seeking medical skin cancer care and aesthetic dermatology",
         "differentiators": [
-          "Same-day access to expert care across 16 locations",
-          "Physician-owned with over 100,000 skin cancers treated",
-          "On-site Mohs laboratory infrastructure"
+          "Same-day dermatology appointments",
+          "Over 100,000 skin cancers treated",
+          "16 state-of-the-art locations in Northeast Ohio"
         ],
-        "aesthetic_style": "Modern clinical medical practice with patient-centered efficiency"
+        "aesthetic_style": "clean, professional, multi-location healthcare network"
       },
       "status": "INFERRED",
-      "source_url": "https://apexskin.com/",
+      "source_url": "https://apexskin.com/about-us",
       "evidence_quotes": [
+        "driven by one common purpose: to empower patients through healthy skin",
         "offering same-day access to expert medical, surgical, and aesthetic care across 16 locations."
       ],
-      "evidence_quote": "offering same-day access to expert medical, surgical, and aesthetic care across 16 locations.",
+      "evidence_quote": "driven by one common purpose: to empower patients through healthy skin",
       "confidence": "high"
     },
     "approval_contact": {
@@ -310,71 +356,65 @@
       "answered_on_site": [
         {
           "question": "Do you offer same-day appointments?",
-          "answer_summary": "Yes, same-day dermatology appointments are available to address urgent clinical concerns.",
+          "answer_summary": "Yes, same-day dermatology appointments are offered for urgent skin needs.",
           "source_url": "https://apexskin.com/contact",
           "evidence_quote": "Yes! Same-day dermatology appointments are available for urgent needs."
         },
         {
           "question": "Can I schedule an appointment online?",
-          "answer_summary": "Patients can utilize an online self-scheduling tool to book appointments directly.",
+          "answer_summary": "Yes, patients can book online using the Apex Skin self-scheduling tool.",
           "source_url": "https://apexskin.com/contact",
-          "evidence_quote": "Apex Skin offers a self-scheduling tool so patients can book a dermatology appointment online."
-        },
-        {
-          "question": "How should I contact Apex Skin about a prescription question or refill request?",
-          "answer_summary": "Patients may use the website chat feature or call the office directly.",
-          "source_url": "https://apexskin.com/contact",
-          "evidence_quote": "For the fastest response, use the blue “Message Us” button in the bottom corner to chat directly with our team."
+          "evidence_quote": "Yes. Apex Skin offers a self-scheduling tool so patients can book a dermatology appointment online."
         },
         {
           "question": "How should I contact Apex Skin about a billing question?",
-          "answer_summary": "Billing inquiries can be addressed via phone, the patient portal, or an online portal.",
+          "answer_summary": "Call the billing department directly or use the online patient portal.",
           "source_url": "https://apexskin.com/contact",
           "evidence_quote": "For billing questions, please call the billing department at 440-443-0413 for the fastest response."
         }
       ],
       "gaps": [
         {
-          "question": "What preparation is needed before a Mohs surgical procedure?",
+          "question": "What should I expect during recovery after Mohs surgery?",
           "status": "INFERRED"
         },
         {
-          "question": "How long does downtime typically last following laser skin resurfacing or chemical peels?",
+          "question": "How should I prepare my skin before an aesthetic chemical peel?",
           "status": "INFERRED"
         },
         {
-          "question": "How frequently should high-risk patients schedule full-body skin cancer exams?",
+          "question": "Are cosmetic treatments like Botox covered by health insurance?",
           "status": "INFERRED"
         }
       ]
     },
     "reel_hooks": [
       {
-        "text": "Noticed an unusual or changing spot on your skin? Here is when you should get a professional skin evaluation.",
+        "text": "Noticed a changing mole? Here is what happens during a full body skin cancer screening.",
         "source_url": "https://apexskin.com/",
         "status": "INFERRED",
         "needs_clinical_review": true
       },
       {
-        "text": "Curious how Mohs surgery works for skin cancer? Here is an overview of why tissue margins matter.",
+        "text": "Wondering how Mohs surgery precisely targets skin cancer while sparing healthy tissue?",
         "source_url": "https://apexskin.com/",
         "status": "INFERRED",
         "needs_clinical_review": true
       },
       {
-        "text": "Struggling with adult acne breakouts that over-the-counter washes cannot clear? Here are your medical options.",
+        "text": "Dealing with chronic adult acne? Here is why over-the-counter washes might not be enough.",
         "source_url": "https://apexskin.com/",
         "status": "INFERRED",
         "needs_clinical_review": true
       },
       {
-        "text": "Thinking about microneedling or chemical peels? Here is what happens during a clinical skin rejuvenation treatment.",
+        "text": "Thinking about wrinkle relaxers like Botox? Here is how dermatologists evaluate your facial anatomy.",
         "source_url": "https://apexskin.com/",
         "status": "INFERRED",
         "needs_clinical_review": true
       },
       {
-        "text": "Dealing with chronic psoriasis or eczema flare-ups? Here is how targeted dermatologic plans help manage symptoms.",
+        "text": "Chemical peel or microneedling: how to know which skin reset treatment fits your goals.",
         "source_url": "https://apexskin.com/",
         "status": "INFERRED",
         "needs_clinical_review": true
@@ -444,6 +484,11 @@
       "char_count": 25047
     },
     {
+      "url": "https://apexskin.com/2022/04/04/josh-cribbss-skin-care-regimen",
+      "title": "Josh Cribbs's skin care regimen - Apex Skin",
+      "char_count": 12107
+    },
+    {
       "url": "https://apexskin.com/insurance",
       "title": "Insurance Accepted | Apex Skin",
       "char_count": 12190
@@ -454,9 +499,9 @@
       "char_count": 25047
     },
     {
-      "url": "https://apexskin.com/our-team/dr-brian-moore-md",
-      "title": "Dr. Brian Moore | Aesthetic Dermatology & Pigmented Lesions Care",
-      "char_count": 10755
+      "url": "https://apexskin.com/dt_team_category/staff-lab",
+      "title": "staff-lab Archives - Apex Skin",
+      "char_count": 9906
     },
     {
       "url": "https://apexskin.com/dt_team_category/providers",
@@ -464,26 +509,21 @@
       "char_count": 12683
     },
     {
-      "url": "https://apexskin.com/dt_team_category/staff-lab",
-      "title": "staff-lab Archives - Apex Skin",
-      "char_count": 9906
+      "url": "https://apexskin.com/our-team/dr-brian-moore-md",
+      "title": "Dr. Brian Moore | Aesthetic Dermatology & Pigmented Lesions Care",
+      "char_count": 10755
     },
     {
       "url": "https://apexskin.com/dt_team_category/staff-avon",
       "title": "staff-avon Archives - Apex Skin",
       "char_count": 10145
-    },
-    {
-      "url": "https://apexskin.com/dt_team_category/staff-parma",
-      "title": "staff-parma Archives - Apex Skin",
-      "char_count": 10122
     }
   ],
   "credits_used": 12,
   "tokens_used": {
-    "input": 29145,
-    "output": 3346,
-    "total": 32491
+    "input": 29150,
+    "output": 3564,
+    "total": 32714
   },
   "warnings": [
     "Input character budget cap (75000 chars) reached; omitted later pages."
