@@ -1,0 +1,27 @@
+{
+  "name": "clinic-intake-dossier",
+  "version": "1.0.0",
+  "description": "Intake dossier and operational task generator for clinic AI twin onboarding",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "cli": "tsx src/cli.ts",
+    "start": "tsx src/server.ts"
+  },
+  "dependencies": {
+    "@google/genai": "^2.27.0",
+    "@mendable/firecrawl-js": "^4.42.4",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "firecrawl": "^4.42.4",
+    "zod": "^3.24.2",
+    "zod-to-json-schema": "^3.25.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.10",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinic Intake Dossier - Revised Implementation Plan | OneHeroAI Demo</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --card-bg: #131b26;
+      --border: #202d3f;
+      --border-accent: #2e435e;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.15);
+      --accent: #818cf8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --code-bg: #0d131d;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2.5rem 1.5rem;
+    }
+
+    .container { max-width: 1040px; margin: 0 auto; }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .badge-bar { display: flex; gap: 0.6rem; margin-bottom: 1rem; flex-wrap: wrap; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-radius: 9999px;
+      border: 1px solid;
+    }
+
+    .badge-primary { background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.3); color: var(--primary); }
+    .badge-success { background: rgba(52, 211, 153, 0.1); border-color: rgba(52, 211, 153, 0.3); color: var(--success); }
+    .badge-accent { background: rgba(129, 140, 248, 0.1); border-color: rgba(129, 140, 248, 0.3); color: var(--accent); }
+    .badge-danger { background: rgba(248, 113, 113, 0.1); border-color: rgba(248, 113, 113, 0.3); color: var(--danger); }
+
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle { font-size: 1.1rem; color: var(--text-muted); max-width: 850px; }
+
+    .section {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+    }
+
+    h3 { font-size: 1.05rem; font-weight: 600; color: var(--primary); margin: 1.25rem 0 0.5rem; }
+
+    p { margin-bottom: 1rem; color: var(--text); }
+    ul, ol { margin-left: 1.5rem; margin-bottom: 1.2rem; }
+    li { margin-bottom: 0.4rem; }
+
+    .alert {
+      border-radius: 8px;
+      padding: 1.2rem 1.4rem;
+      margin-bottom: 1.2rem;
+      border-left: 4px solid;
+      background: var(--code-bg);
+    }
+    .alert-important { border-color: var(--primary); background: rgba(56, 189, 248, 0.05); }
+    .alert-warning { border-color: var(--warning); background: rgba(251, 191, 36, 0.05); }
+    .alert-note { border-color: var(--accent); background: rgba(129, 140, 248, 0.05); }
+
+    .alert-title {
+      font-weight: 700;
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+    }
+    .alert-important .alert-title { color: var(--primary); }
+    .alert-warning .alert-title { color: var(--warning); }
+    .alert-note .alert-title { color: var(--accent); }
+
+    table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: 0.92rem; }
+    th, td { padding: 0.75rem 1rem; text-align: left; border: 1px solid var(--border); }
+    th { background: rgba(255, 255, 255, 0.03); color: #ffffff; font-weight: 600; }
+    tr:nth-child(even) td { background: rgba(255, 255, 255, 0.01); }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.88em;
+      background: var(--code-bg);
+      color: #f1f5f9;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.2rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+
+    .quote-box {
+      border-left: 4px solid var(--accent);
+      padding: 0.75rem 1rem;
+      background: rgba(129, 140, 248, 0.05);
+      margin: 1rem 0;
+      font-style: italic;
+      color: #cbd5e1;
+    }
+
+    .build-steps { list-style: none; margin-left: 0; counter-reset: step-counter; }
+    .build-step-item { position: relative; padding-left: 3.5rem; margin-bottom: 1.75rem; }
+    .build-step-item::before {
+      counter-increment: step-counter;
+      content: counter(step-counter);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 2.25rem;
+      height: 2.25rem;
+      background: var(--primary-glow);
+      border: 2px solid var(--primary);
+      color: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    .build-step-title { font-size: 1.05rem; font-weight: 700; color: #ffffff; margin-bottom: 0.3rem; }
+
+    .rule-box {
+      border: 1px dashed var(--danger);
+      background: rgba(248, 113, 113, 0.06);
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      margin: 1.5rem 0;
+      font-weight: 600;
+      color: #fca5a5;
+    }
+
+    .mermaid {
+      background: var(--code-bg);
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin: 1.5rem 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .tag { font-size: 0.72rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 600; }
+    .tag-found { background: rgba(52, 211, 153, 0.2); color: var(--success); }
+    .tag-inferred { background: rgba(251, 191, 36, 0.2); color: var(--warning); }
+    .tag-missing { background: rgba(248, 113, 113, 0.2); color: var(--danger); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge-bar">
+        <span class="badge badge-primary">OneHeroAI Founder's Office Demo</span>
+        <span class="badge badge-success">Firecrawl JS SDK + Gemini Flash</span>
+        <span class="badge badge-accent">Code Verifier + Gap Engine</span>
+        <span class="badge badge-danger">Strict Operational Output</span>
+      </div>
+      <h1>Clinic Intake Dossier: Implementation Plan</h1>
+      <p class="subtitle">Autonomous conversion of public clinic websites into structured onboarding dossiers, verifier-checked evidence quotes, requirements gap tracking (tasks.csv), and clinically conservative reel hooks.</p>
+      <div class="quote-box">
+        <strong>Core Principle:</strong> "The LLM extracts; code verifies and decides what is missing."
+      </div>
+    </header>
+
+    <!-- Context & Value -->
+    <div class="section">
+      <h2>1. Context & Operational Purpose</h2>
+      <p>OneHeroAI provides managed AI twin services to doctors: weekly patient-education videos, a voice twin for clinic reception calls, and a video twin answering patient questions. Onboarding is currently stalled by scattered inputs. This tool turns one public clinic URL into an operational dossier so an onboarding coordinator starts the first call fully prepared.</p>
+      <p><strong>Every gap becomes an owned task.</strong> Outputs per run:</p>
+      <ul>
+        <li><code>dossier.json</code> &mdash; Machine-readable structured intake profile with verifier metadata.</li>
+        <li><code>dossier.html</code> &mdash; Plain, readable HTML page with color-coded chips, copy-to-clipboard WhatsApp drafts, and direct download links.</li>
+        <li><code>dossier.md</code> &mdash; Executive markdown dossier for clinical review.</li>
+        <li><code>tasks.csv</code> &mdash; Tracker-ready tasks for every missing requirement with owner, next action, and 2-day due dates.</li>
+      </ul>
+    </div>
+
+    <!-- Verified Live Constraints -->
+    <div class="section">
+      <h2>2. Verified Tech Stack & SDK Checks</h2>
+
+      <div class="alert alert-important">
+        <div class="alert-title">&#9679; Gemini via @google/genai (generateContent)</div>
+        <p>Live model query completed for your <code>GEMINI_API_KEY</code>: <code>models/gemini-3.8-flash</code> and <code>models/gemini-3.5-flash</code> are verified available. We use <code>gemini-3.8-flash</code> (configurable via <code>GEMINI_MODEL</code>) with <code>client.models.generateContent</code>, <code>temperature: 0.1</code>, and JSON schema converted via <code>zodToJsonSchema</code>. All Claude/Anthropic references removed.</p>
+      </div>
+
+      <div class="alert alert-note">
+        <div class="alert-title">&#9432; Firecrawl SDK v4.42.4 & Alexandria Verification</div>
+        <p>Verified against installed SDK types: <code>firecrawl.map(url, { limit: 12 })</code> and <code>firecrawl.scrape(url, { formats: ['markdown'] })</code>. Alexandria search was evaluated for healthcare registries (e.g. CMS NPPES); to prevent cross-border failures and keep all facts strictly grounded in the clinic's public site, third-party registries are skipped and recorded in <code>DEVLOG.md</code>.</p>
+      </div>
+
+      <div class="alert alert-warning">
+        <div class="alert-title">&#9888; Untrusted Data Shield & Substring Verifier</div>
+        <p>System prompt treats all scraped text as untrusted data. In Step 4, a <strong>pure code verifier</strong> tests every <code>evidence_quote</code> (&lt; 25 words) as an exact substring of the scraped markdown. If not found, code automatically downgrades the field to <code>INFERRED</code> or <code>MISSING</code>.</p>
+      </div>
+    </div>
+
+    <!-- Pipeline Architecture -->
+    <div class="section">
+      <h2>3. End-to-End Pipeline Architecture</h2>
+      <div class="mermaid">
+flowchart TD
+    A["Clinic URL Input"] --> B["Page Mapper (Firecrawl.map, Max 12 pages)"]
+    B --> C["Filter: Same-Domain, Heuristic Scoring (Home, About, Doctor, Services, FAQ, Contact, Blog)"]
+    C --> D["Batch Scraper (Firecrawl.scrape to Markdown, 30s timeout, char cap)"]
+    D --> E["Gemini Extraction (generateContent with zodToJsonSchema, temp 0.1)"]
+    E --> F["Zod Parse & 1x Self-Correction Retry"]
+    F --> G["VERIFIER (Pure Code): Verbatim Substring Match on Markdown"]
+    G -- "Quote missing/altered" --> G1["Downgrade to INFERRED/MISSING + Log Stats"]
+    G -- "Quote verified" --> H["GAP ENGINE (Pure Code): Compare vs requirements.config.json"]
+    H --> I["Deterministic Hook Linter (Reject Guarantees/Superlatives)"]
+    I --> J["Generator: Status Header, WhatsApp Drafts, tasks.csv"]
+    J --> K["Renderers: dossier.json, dossier.html, dossier.md, tasks.csv"]
+      </div>
+    </div>
+
+    <!-- Requirements Config & Gap Engine -->
+    <div class="section">
+      <h2>4. Gap Engine & requirements.config.json</h2>
+      <p>Requirements are defined in <code>requirements.config.json</code>, allowing changes without altering code. Every item is labelled <code>"assumed, confirm with OHAI"</code>.</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Requirement</th>
+            <th>Why It Blocks Production</th>
+            <th>Who to Ask</th>
+            <th>Task Action & Default Due Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Doctor Headshot</strong></td>
+            <td>Video Twin avatar generation requires a high-res front-facing portrait in clinical attire.</td>
+            <td>Practice Manager / Doctor</td>
+            <td>Request front-facing photo in clinic attire with neutral lighting &middot; +2 working days</td>
+          </tr>
+          <tr>
+            <td><strong>Direct Booking Link / WhatsApp</strong></td>
+            <td>Voice twin receptionist cannot triage patient appointments without a direct scheduling destination.</td>
+            <td>Front Desk Lead</td>
+            <td>Confirm direct booking link or WhatsApp triage phone &middot; +2 working days</td>
+          </tr>
+          <tr>
+            <td><strong>Clinical Approval Contact</strong></td>
+            <td>Weekly educational reels cannot be rendered or scheduled without an authorized clinical sign-off persona.</td>
+            <td>Lead Doctor</td>
+            <td>Identify designated clinical approver for video scripts &middot; +2 working days</td>
+          </tr>
+          <tr>
+            <td><strong>Recording Setup / Mic</strong></td>
+            <td>Voice cloning requires clean audio sample or confirmed mic/quiet room.</td>
+            <td>Doctor</td>
+            <td>Confirm doctor microphone setup or schedule audio recording session &middot; +2 working days</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Status Header & Hooks -->
+    <div class="section">
+      <h2>5. Status Header & Reel Hooks Linter</h2>
+
+      <h3>Status Header (Top of Every Dossier)</h3>
+      <p>Provides instantaneous operational visibility: fields found / inferred / missing counts, verifier downgrades, blockers count, drafts ready, and <code>ready_for_strategy</code> status.</p>
+      <pre><code>"7 of 13 found, 2 inferred, 4 missing, 1 verifier downgrade, 2 blockers, 4 drafts ready. Ready for strategy: false (blocked on approval contact, booking destination)"</code></pre>
+
+      <h3>5 Reel Hooks with Deterministic Code Linter</h3>
+      <p>Each hook carries <code>needs_clinical_review: true</code>. A deterministic code linter rejects and regenerates hooks containing:</p>
+      <ul>
+        <li>Outcome guarantees (<code>"guarantee"</code>, <code>"100%"</code>, <code>"promise"</code>)</li>
+        <li>Painless promises (<code>"painless"</code>, <code>"zero pain"</code>)</li>
+        <li>Superlatives & cures (<code>"best"</code>, <code>"cure"</code>, <code>"miracle"</code>, <code>"#1"</code>)</li>
+        <li>Before / after claims or efficacy statements beyond the clinic's site</li>
+      </ul>
+    </div>
+
+    <!-- Strict Delivery Order -->
+    <div class="section">
+      <h2>6. Strict 5-Step Build Order</h2>
+      <div class="rule-box">
+        &#10071; HARD CONSTRAINT: Do not start step N+1 until step N runs on a real clinic URL. Report command, output, and failures after each step.
+      </div>
+
+      <ol class="build-steps">
+        <li class="build-step-item">
+          <div class="build-step-title">Step 1: CLI End-to-End on Real URL (Output dossier.json)</div>
+          <p>Initialize project, install dependencies, implement Firecrawl mapper (max 12 pages) + scraper + Gemini <code>generateContent</code> extraction with Zod schema. Test against a real live clinic site and verify <code>dossier.json</code> is written and credits/tokens logged.</p>
+        </li>
+        <li class="build-step-item">
+          <div class="build-step-title">Step 2: Zod Validation + Verifier + Gap Engine + tasks.csv + Status Header</div>
+          <p>Implement single-retry self-correction on schema failure. Implement pure-code substring verifier with automatic downgrades. Compare against <code>requirements.config.json</code>, compute blockers, WhatsApp drafts, <code>tasks.csv</code>, and status header.</p>
+        </li>
+        <li class="build-step-item">
+          <div class="build-step-title">Step 3: HTML and Markdown Renderers</div>
+          <p>Render <code>dossier.html</code> (readable, color-coded status chips, copy-to-clipboard WhatsApp buttons, direct download buttons) and <code>dossier.md</code>.</p>
+        </li>
+        <li class="build-step-item">
+          <div class="build-step-title">Step 4: Pre-baked Samples (3) & Static Samples Page (Deploy Now)</div>
+          <p>Pre-generate 3 real clinic dossiers (Dental, Dermatology/Physio, Messy site). Redact personal phone numbers/emails (marked "redacted in sample"). Build static viewer loading with zero API calls. Prepare Railway deployment.</p>
+        </li>
+        <li class="build-step-item">
+          <div class="build-step-title">Step 5: Optional Live Mode (Passcode + Rate Limiter)</div>
+          <p>If time permits, add Express URL input box with <code>APP_PASSCODE</code> and rate limit (5 runs / 10 mins), falling back cleanly to samples on any error.</p>
+        </li>
+      </ol>
+    </div>
+
+    <!-- Evidence & Audit Package -->
+    <div class="section">
+      <h2>7. Evidence Files & Walkthrough Script</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>File</th>
+            <th>Required Content</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>DEVLOG.md</code></td>
+            <td>Chronological, un-fabricated log of every real failure hit, what broke, how it was fixed, timings, credits, verifier downgrade counts, and Alexandria decision.</td>
+          </tr>
+          <tr>
+            <td><code>ACCURACY.md</code></td>
+            <td><strong>Template ONLY</strong> (sample, field, claimed value, source URL, checked yes/no, note). Left for manual human auditing as requested.</td>
+          </tr>
+          <tr>
+            <td><code>README.md</code></td>
+            <td>One-screen description, setup guide, and 90-second walkthrough script showing in order: (1) Status header and tasks.csv, (2) INFERRED labels, (3) One real error caught by the verifier.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#0d131d',
+        primaryColor: '#38bdf8',
+        primaryTextColor: '#ffffff',
+        primaryBorderColor: '#2e435e',
+        lineColor: '#818cf8',
+        secondaryColor: '#131b26',
+        tertiaryColor: '#1e293b'
+      }
+    });
+  </script>
+</body>
+</html>

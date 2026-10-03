@@ -1,0 +1,56 @@
+{
+  "version": "1.0",
+  "note": "Configuration for OneHeroAI clinic AI twin onboarding. Every entry is assumed, confirm with OHAI.",
+  "requirements": [
+    {
+      "key": "doctor_headshot",
+      "label": "Doctor High-Resolution Headshot",
+      "target_field": "existing_media_assets",
+      "check_type": "has_headshot",
+      "blocking_reason": "Video Twin avatar generation requires a clean, high-resolution front-facing portrait in clinical attire.",
+      "who_to_ask": "Practice Manager / Lead Doctor",
+      "whatsapp_template": "Hi Dr. {doctor_name}, to prepare your OneHeroAI video twin avatar, could you send over a high-resolution front-facing photo in clinic attire with neutral lighting?",
+      "status": "assumed, confirm with OHAI"
+    },
+    {
+      "key": "booking_destination",
+      "label": "Direct Booking Link or WhatsApp Channel",
+      "target_field": "contact_booking_channels",
+      "check_type": "has_booking_channel",
+      "blocking_reason": "Voice Twin receptionist cannot triage or route patient appointment inquiries without a verified destination.",
+      "who_to_ask": "Front Desk Coordinator",
+      "whatsapp_template": "Hi {contact_name}, what direct link or WhatsApp phone number should your AI voice receptionist share with patients wanting to book an appointment at {clinic_name}?",
+      "status": "assumed, confirm with OHAI"
+    },
+    {
+      "key": "approval_contact",
+      "label": "Designated Clinical Approval Contact",
+      "target_field": "approval_contact",
+      "check_type": "has_approval_contact",
+      "blocking_reason": "Weekly patient-education video scripts cannot be released to production without an authorized clinical sign-off persona.",
+      "who_to_ask": "Lead Doctor / Clinic Director",
+      "whatsapp_template": "Hi Dr. {doctor_name}, who from your clinical team should review and approve the weekly patient-education video scripts before they are published?",
+      "status": "assumed, confirm with OHAI"
+    },
+    {
+      "key": "recording_setup",
+      "label": "Doctor Recording Readiness & Audio Setup",
+      "target_field": "recording_readiness",
+      "check_type": "has_recording_readiness",
+      "blocking_reason": "Voice twin cloning requires a clean audio sample or confirmed dedicated microphone in a quiet room.",
+      "who_to_ask": "Lead Doctor",
+      "whatsapp_template": "Hi Dr. {doctor_name}, do you currently have a dedicated USB/lapel microphone for recording your 2-minute voice twin calibration sample, or should we ship a kit?",
+      "status": "assumed, confirm with OHAI"
+    },
+    {
+      "key": "brand_assets",
+      "label": "Clinic Logo & Brand Color Guidelines",
+      "target_field": "existing_media_assets",
+      "check_type": "has_logo",
+      "blocking_reason": "Video reels and patient FAQ widgets need clinic vector/PNG logos and brand styling for video templates.",
+      "who_to_ask": "Marketing / Clinic Admin",
+      "whatsapp_template": "Hi {contact_name}, could you share a high-resolution vector or transparent PNG of {clinic_name}'s logo for your custom video intro overlays?",
+      "status": "assumed, confirm with OHAI"
+    }
+  ]
+}
