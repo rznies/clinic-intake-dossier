@@ -56,10 +56,19 @@ async function main() {
     mapResult.warnings.forEach((w) => console.warn(`  Warning: ${w}`));
   }
 
-  // 2. Scrape Pages with rate-limit backoff and retries
-  console.log(`\n[2/4] Scraping ${mapResult.selectedUrls.length} pages to markdown...`);
-  const scrapeResult = await scrapePagesBatch(mapResult.selectedUrls, firecrawlKey, 3);
+  // 2. Scrape Pages with serialised requests (5.5s spacing) & reset time handling
+  console.log(`\n[2/4] Scraping ${mapResult.selectedUrls.length} pages to markdown (serialised, 5.5s spacing)...`);
+  const scrapeResult = await scrapePagesBatch(mapResult.selectedUrls, firecrawlKey);
   console.log(`Successfully scraped ${scrapeResult.pages.length} pages (${scrapeResult.creditsUsed} Firecrawl credits used, ${scrapeResult.retriesAttempted} retries).`);
+
+  // Check if FAQ page was discovered but failed to scrape
+  const faqPageDiscovered = mapResult.selectedUrls.find((u) => /\bfaqs?\b/i.test(u));
+  const faqPageScraped = scrapeResult.pages.find((p) => /\bfaqs?\b/i.test(p.url));
+  if (faqPageDiscovered && !faqPageScraped) {
+    const faqWarning = `FAQ page (${faqPageDiscovered}) was not scraped; answered_on_site contains only FAQs found across other scraped pages.`;
+    scrapeResult.warnings.push(faqWarning);
+    console.warn(`  Warning: ${faqWarning}`);
+  }
 
   if (scrapeResult.warnings.length > 0) {
     scrapeResult.warnings.forEach((w) => console.warn(`  Warning: ${w}`));
@@ -73,14 +82,35 @@ async function main() {
   // 4. Code Verifier (Deterministic, NO LLM)
   console.log(`\n[4/4] Running Verifier, Hook Linter & Gap Engine (Code, not LLM)...`);
   const verificationResult = verifyDossierExtraction(extractionResult.extraction, scrapeResult.pages);
-  console.log(`Verifier complete: ${verificationResult.stats.totalDowngrades} downgrades recorded.`);
+  console.log(`Verifier complete: ${verificationResult.stats.totalDowngrades} downgrades recorded (Real: ${verificationResult.stats.realFabricationsCount}, Formatting: ${verificationResult.stats.formattingMismatchesCount}).`);
   if (verificationResult.stats.fieldDowngrades.length > 0) {
     verificationResult.stats.fieldDowngrades.forEach((d) => {
-      console.log(`  Downgrade [${d.field}]: ${d.originalStatus} -> ${d.newStatus} (${d.reason}) - ${d.details}`);
+      console.log(`  Downgrade [${d.field}]: ${d.originalStatus} -> ${d.newStatus} [${d.classification}] (${d.reason}) - ${d.details}`);
     });
   }
 
-  // 5. Reel Hook Linter
+  // Handle failed pages: mark dependent fields as MISSING
+  const failedPageWarnings: string[] = [];
+  if (scrapeResult.failedUrls.length > 0) {
+    const failedSet = new Set(scrapeResult.failedUrls.map((f) => f.url.toLowerCase().replace(/^https?:\/\/(www\.)?/, "").replace(/\/+$/, "")));
+    const coreKeys = Object.keys(verificationResult.verifiedFields) as Array<keyof typeof verificationResult.verifiedFields>;
+    for (const k of coreKeys) {
+      const f = verificationResult.verifiedFields[k] as any;
+      if (f && f.source_url) {
+        const norm = f.source_url.toLowerCase().replace(/^https?:\/\/(www\.)?/, "").replace(/\/+$/, "");
+        if (failedSet.has(norm)) {
+          f.status = "MISSING";
+          f.evidence_quote = null;
+          f.evidence_quotes = [];
+          const warn = `Field '${k}' depends on failed page ${f.source_url} and was marked MISSING.`;
+          failedPageWarnings.push(warn);
+          console.warn(`  Warning: ${warn}`);
+        }
+      }
+    }
+  }
+
+  // 5. Reel Hook Linter (Word-boundary regex deny-list)
   const lintedHooks = lintAllHooks(verificationResult.verifiedFields.reel_hooks);
   verificationResult.verifiedFields.reel_hooks = lintedHooks.hooks;
   if (lintedHooks.warnings.length > 0) {
@@ -96,10 +126,29 @@ async function main() {
   console.log(`\nStatus Header: "${gapResult.statusHeader}"`);
   console.log(`Identified ${gapResult.missingItems.length} missing onboarding items and generated ${gapResult.tasks.length} tracker tasks.`);
 
+  // Log downgrade details into DEVLOG.md
+  if (verificationResult.stats.fieldDowngrades.length > 0) {
+    try {
+      const devlogPath = path.resolve(process.cwd(), "DEVLOG.md");
+      const timestamp = new Date().toISOString();
+      let devlogSection = `\n\n### Verifier Downgrade Audit: ${targetUrl} (${timestamp})\n`;
+      devlogSection += `Total downgrades: ${verificationResult.stats.totalDowngrades} (Real fabrications: ${verificationResult.stats.realFabricationsCount}, Formatting/subtle mismatches: ${verificationResult.stats.formattingMismatchesCount})\n\n`;
+      devlogSection += `| Field | Status Change | Classification | Reason | Normalized Quote | Nearest Snippet on Page |\n`;
+      devlogSection += `| :--- | :--- | :--- | :--- | :--- | :--- |\n`;
+      for (const d of verificationResult.stats.fieldDowngrades) {
+        devlogSection += `| **${d.field}** | ${d.originalStatus} &rarr; ${d.newStatus} | \`${d.classification}\` | ${d.reason} | \`${d.normalizedQuote.slice(0, 45)}\` | ${d.nearestSnippet.replace(/\|/g, "\\|").slice(0, 80)} |\n`;
+      }
+      await fs.appendFile(devlogPath, devlogSection, "utf8");
+    } catch (err: any) {
+      console.warn(`  Warning: Failed to append to DEVLOG.md: ${err.message}`);
+    }
+  }
+
   const durationMs = Date.now() - startTime;
   const allWarnings = [
     ...mapResult.warnings,
     ...scrapeResult.warnings,
+    ...failedPageWarnings,
     ...extractionResult.warnings,
     ...lintedHooks.warnings,
   ];
@@ -111,7 +160,21 @@ async function main() {
     gemini_model: extractionResult.modelString,
     status_header: gapResult.statusHeader,
     summary_counts: gapResult.summaryCounts,
-    downgrade_reasons: verificationResult.stats.downgradeReasons,
+    downgrade_summary: {
+      total_downgrades: verificationResult.stats.totalDowngrades,
+      real_fabrications: verificationResult.stats.realFabricationsCount,
+      formatting_mismatches: verificationResult.stats.formattingMismatchesCount,
+    },
+    downgrades_detail: verificationResult.stats.fieldDowngrades.map((d) => ({
+      field: d.field,
+      originalStatus: d.originalStatus,
+      newStatus: d.newStatus,
+      reason: d.reason,
+      normalizedQuote: d.normalizedQuote,
+      nearestSnippet: d.nearestSnippet,
+      classification: d.classification,
+      details: d.details,
+    })),
     fields: verificationResult.verifiedFields,
     missing_items: gapResult.missingItems,
     tasks: gapResult.tasks,

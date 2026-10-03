@@ -64,3 +64,35 @@ This log records real operational engineering events encountered while building 
   - RFC 4180 CSV task generator (`src/render/csv.ts`)
   - 2 verified real clinic sample dossiers (`Grandview Dental Care` and `Apex Dermatology`)
   - Deployed static portal on GitHub Pages: `https://rznies.github.io/clinic-intake-dossier/`
+
+
+### Verifier Downgrade Audit: https://grandviewdentalcare.com (2026-10-03T09:40:55.848Z)
+Total downgrades: 4 (Real fabrications: 4, Formatting/subtle mismatches: 0)
+
+| Field | Status Change | Classification | Reason | Normalized Quote | Nearest Snippet on Page |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **specialty** | FOUND &rarr; INFERRED | `real_fabrication` | missing_quote | `` | None |
+| **services_procedures** | FOUND &rarr; INFERRED | `real_fabrication` | missing_quote | `` | None |
+| **contact_booking_channels** | FOUND &rarr; INFERRED | `real_fabrication` | phone_not_in_quote | `614 486 7378 info grandviewdentalcare com` | Phone digits 0485234336 missing from quotes digits |
+| **existing_media_assets** | FOUND &rarr; INFERRED | `real_fabrication` | phone_not_in_quote | `headshot of dr abraham hoellrich dentist and ` | Phone digits 17086366474 missing from quotes digits |
+
+
+### Verifier Downgrade Audit: https://grandviewdentalcare.com (2026-10-03T09:47:40.624Z)
+Total downgrades: 3 (Real fabrications: 3, Formatting/subtle mismatches: 0)
+
+| Field | Status Change | Classification | Reason | Normalized Quote | Nearest Snippet on Page |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **specialty** | FOUND &rarr; INFERRED | `real_fabrication` | quote_not_in_page | `general dentistry or preventive care encompas` | [No matching text found on page] |
+| **contact_booking_channels** | FOUND &rarr; INFERRED | `real_fabrication` | quote_not_in_page | `https book modento io c 7eda0e0485234336aa817` | [No matching text found on page] |
+| **existing_media_assets** | FOUND &rarr; INFERRED | `real_fabrication` | quote_not_in_page | `dr abraham hoellrich grandview dental care co` | [No matching text found on page] |
+
+
+### Verifier Downgrade Audit: https://apexskin.com (2026-10-03T09:49:59.218Z)
+Total downgrades: 4 (Real fabrications: 4, Formatting/subtle mismatches: 0)
+
+| Field | Status Change | Classification | Reason | Normalized Quote | Nearest Snippet on Page |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **specialty** | FOUND &rarr; INFERRED | `real_fabrication` | quote_not_in_page | `dermatology aesthetic skin care services` | [anchor: "dermatology"] ...ment opportunities provider recruitment dermatology s |
+| **contact_booking_channels** | FOUND &rarr; INFERRED | `real_fabrication` | phone_not_in_quote | `call now 833 279 skin same day dermatology ap` | Phone digits 8332797546 missing from quotes digits [833279 ] |
+| **social_links** | FOUND &rarr; INFERRED | `real_fabrication` | quote_not_in_page | `https www facebook com apex dermatology 23680` | [No matching text found on page] |
+| **existing_media_assets** | FOUND &rarr; INFERRED | `real_fabrication` | quote_not_in_page | `https www apexskin com wp content uploads 202` | [No matching text found on page] |

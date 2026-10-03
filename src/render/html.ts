@@ -176,18 +176,34 @@ function renderFieldRow(label: string, field: any): string {
 
   const statusBadge = getStatusBadge(field.status);
   const valueHtml = formatFieldValue(field.value);
-  const quoteHtml = field.evidence_quote
-    ? `<div class="mt-2 text-xs text-slate-600 bg-slate-50 p-2 rounded border-l-2 border-emerald-500 italic">
-        &ldquo;${escapeHtml(field.evidence_quote)}&rdquo;
-        ${
-          field.source_url
-            ? `<div class="mt-1 not-italic"><a href="${escapeHtml(
-                field.source_url
-              )}" target="_blank" class="text-blue-600 hover:underline text-[11px]">&rarr; Source Page</a></div>`
-            : ""
-        }
-      </div>`
-    : "";
+
+  const quotes: string[] = [];
+  if (Array.isArray(field.evidence_quotes) && field.evidence_quotes.length > 0) {
+    quotes.push(...field.evidence_quotes.filter(Boolean));
+  } else if (field.evidence_quote) {
+    quotes.push(field.evidence_quote);
+  }
+
+  const quotesHtml =
+    quotes.length > 0
+      ? `<div class="mt-2 space-y-1.5">
+          ${quotes
+            .map(
+              (q) =>
+                `<div class="text-xs text-slate-600 bg-slate-50 p-2 rounded border-l-2 border-emerald-500 italic">&ldquo;${escapeHtml(
+                  q
+                )}&rdquo;</div>`
+            )
+            .join("")}
+          ${
+            field.source_url
+              ? `<div class="not-italic"><a href="${escapeHtml(
+                  field.source_url
+                )}" target="_blank" class="text-blue-600 hover:underline text-[11px]">&rarr; Source Page</a></div>`
+              : ""
+          }
+        </div>`
+      : "";
 
   return `
   <tr class="border-b border-slate-100 hover:bg-slate-50/50">
@@ -195,7 +211,7 @@ function renderFieldRow(label: string, field: any): string {
     <td class="py-3.5 px-4 align-top w-28">${statusBadge}</td>
     <td class="py-3.5 px-4 text-sm text-slate-800 align-top">
       ${valueHtml}
-      ${quoteHtml}
+      ${quotesHtml}
     </td>
   </tr>`;
 }
@@ -364,7 +380,7 @@ export function renderDossierHtml(dossier: DossierRecord): string {
     <section class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
       <div class="p-6 border-b border-slate-100">
         <h2 class="text-lg font-bold text-slate-900">2. Clinical Intake Profile</h2>
-        <p class="text-xs text-slate-500">Extracted from public website pages with code-verified verbatim quote substrings.</p>
+        <p class="text-xs text-slate-500">Extracted from public website pages with code-checked verbatim quote substrings.</p>
       </div>
 
       <div class="overflow-x-auto">

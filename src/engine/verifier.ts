@@ -1,21 +1,22 @@
 import { ExtractionOutput, FieldStatus } from "../types/dossier.js";
 import { ScrapedPage } from "../scraper/fetcher.js";
 
+export interface DowngradeRecord {
+  field: string;
+  originalStatus: FieldStatus;
+  newStatus: FieldStatus;
+  reason: string;
+  normalizedQuote: string;
+  nearestSnippet: string;
+  classification: "real_fabrication" | "formatting_or_subtle_mismatch";
+  details: string;
+}
+
 export interface VerificationStats {
   totalDowngrades: number;
-  downgradeReasons: {
-    quote_not_in_page: number;
-    value_token_not_in_quote: number;
-    quote_too_long: number;
-    missing_quote: number;
-  };
-  fieldDowngrades: Array<{
-    field: string;
-    originalStatus: FieldStatus;
-    newStatus: FieldStatus;
-    reason: string;
-    details: string;
-  }>;
+  realFabricationsCount: number;
+  formattingMismatchesCount: number;
+  fieldDowngrades: DowngradeRecord[];
 }
 
 export interface VerificationResult {
@@ -24,10 +25,29 @@ export interface VerificationResult {
 }
 
 /**
- * Normalizes text for substring checking: strips excess whitespace and lowercases.
+ * Normalises text for robust verbatim matching:
+ * 1. Unicode normalise (NFKD)
+ * 2. Strip HTML tags
+ * 3. Strip markdown syntax (links, images, *, #, >, |, `, ~, _)
+ * 4. Lowercase
+ * 5. Collapse all whitespace and punctuation to single spaces
  */
-function normalizeText(text: string): string {
-  return text.toLowerCase().replace(/\s+/g, " ").trim();
+export function normalizeText(text: string): string {
+  if (!text) return "";
+  let clean = text.normalize("NFKD");
+  // Strip HTML tags if any (e.g. <br>, <p>, &nbsp; etc.)
+  clean = clean.replace(/<[^>]*>/g, " ");
+  // Strip markdown links [text](url) -> text
+  clean = clean.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+  // Strip images ![alt](url) -> alt
+  clean = clean.replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1");
+  // Strip markdown symbols
+  clean = clean.replace(/[*#>|`~_]/g, " ");
+  // Lowercase
+  clean = clean.toLowerCase();
+  // Collapse all punctuation and whitespace to single space
+  clean = clean.replace(/[^a-z0-9]+/g, " ");
+  return clean.trim();
 }
 
 /**
@@ -37,41 +57,159 @@ function countWords(str: string): number {
   return str.trim().split(/\s+/).filter(Boolean).length;
 }
 
-function extractTokensToCheck(val: any): string[] {
-  const tokens: string[] = [];
-  const text = JSON.stringify(val);
-
-  // Emails
-  const emails = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
-  tokens.push(...emails);
-
-  // Phone numbers (e.g. 614-486-7378, (614) 486-7378)
-  const phones = text.match(/(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g) || [];
-  tokens.push(...phones.map((p) => p.replace(/\D/g, "")).filter((p) => p.length >= 7));
-
-  return Array.from(new Set(tokens));
-}
-
 /**
- * Checks whether a token appears in the quote (tolerant of phone formatting).
+ * Finds the nearest matching snippet on the page around the quote words.
  */
-function tokenAppearsInQuote(token: string, normalizedQuote: string): boolean {
-  const normToken = token.toLowerCase();
-  if (normalizedQuote.includes(normToken)) return true;
-
-  // If token is all digits (e.g. phone or street number), test stripped digits in quote
-  if (/^\d+$/.test(token)) {
-    const quoteDigits = normalizedQuote.replace(/\D/g, "");
-    if (quoteDigits.includes(token)) return true;
+function findNearestPageSnippet(normQuote: string, normPageText: string): { snippet: string; isLikelyFormatting: boolean } {
+  const words = normQuote.split(" ").filter((w) => w.length > 2);
+  if (words.length === 0) {
+    return { snippet: "[Quote contains no words > 2 chars]", isLikelyFormatting: false };
   }
 
-  return false;
+  // 1. Try finding 3-word prefix
+  const searchPrefix = words.slice(0, Math.min(3, words.length)).join(" ");
+  const idx = normPageText.indexOf(searchPrefix);
+  if (idx !== -1) {
+    const start = Math.max(0, idx - 40);
+    const end = Math.min(normPageText.length, idx + searchPrefix.length + 80);
+    return {
+      snippet: `...${normPageText.slice(start, end)}...`,
+      isLikelyFormatting: true,
+    };
+  }
+
+  // 2. Try longest word match
+  const sortedWords = [...words].sort((a, b) => b.length - a.length);
+  const longestWord = sortedWords[0];
+  const longIdx = normPageText.indexOf(longestWord);
+  if (longIdx !== -1) {
+    const start = Math.max(0, longIdx - 40);
+    const end = Math.min(normPageText.length, longIdx + longestWord.length + 80);
+    return {
+      snippet: `[anchor: "${longestWord}"] ...${normPageText.slice(start, end)}...`,
+      isLikelyFormatting: false,
+    };
+  }
+
+  return {
+    snippet: "[No matching text found on page]",
+    isLikelyFormatting: false,
+  };
 }
 
 /**
- * Deterministic code verifier (NO LLM):
- * Validates verbatim evidence quotes and checks grounded token presence.
- * Downgrades ungrounded fields to INFERRED or MISSING and tracks reasons.
+ * Safely extracts phone numbers from field value.
+ * Never inspects URLs or image filenames for phone digits.
+ */
+function extractPhonesFromValue(obj: any): string[] {
+  const phones: string[] = [];
+
+  function recurse(val: any, keyName?: string) {
+    if (!val) return;
+    if (typeof val === "string") {
+      const lower = val.trim().toLowerCase();
+      // Skip URLs and image filenames entirely
+      if (
+        lower.startsWith("http://") ||
+        lower.startsWith("https://") ||
+        /\.(jpg|jpeg|png|webp|gif|svg|ico|pdf)($|\?)/i.test(lower) ||
+        keyName === "url" ||
+        keyName === "booking_url" ||
+        keyName === "source_url" ||
+        keyName === "image" ||
+        keyName === "avatar" ||
+        keyName === "src" ||
+        keyName === "href"
+      ) {
+        return;
+      }
+
+      const isExplicitPhoneKey = Boolean(keyName && /phone|whatsapp|tel|mobile/i.test(keyName));
+      const isStrictPhone = /^(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/.test(val.trim());
+
+      if (isExplicitPhoneKey || isStrictPhone) {
+        const digits = val.replace(/\D/g, "");
+        if (digits.length >= 7 && digits.length <= 15) {
+          phones.push(digits);
+        }
+      }
+    } else if (Array.isArray(val)) {
+      for (const item of val) recurse(item, keyName);
+    } else if (typeof val === "object") {
+      for (const [k, v] of Object.entries(val)) {
+        recurse(v, k);
+      }
+    }
+  }
+
+  recurse(obj);
+  return [...new Set(phones)];
+}
+
+/**
+ * Safely extracts email addresses from field value.
+ * Never inspects URLs or image filenames.
+ */
+function extractEmailsFromValue(obj: any): string[] {
+  const emails: string[] = [];
+
+  function recurse(val: any, keyName?: string) {
+    if (!val) return;
+    if (typeof val === "string") {
+      const lower = val.trim().toLowerCase();
+      if (lower.startsWith("http://") || lower.startsWith("https://")) return;
+      if (/\.(jpg|jpeg|png|webp|gif|svg)($|\?)/i.test(lower)) return;
+
+      const matches = val.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g);
+      if (matches) {
+        for (const m of matches) {
+          emails.push(m.toLowerCase());
+        }
+      }
+    } else if (Array.isArray(val)) {
+      for (const item of val) recurse(item, keyName);
+    } else if (typeof val === "object") {
+      for (const [k, v] of Object.entries(val)) {
+        recurse(v, k);
+      }
+    }
+  }
+
+  recurse(obj);
+  return [...new Set(emails)];
+}
+
+/**
+ * Safely extracts HTTP/HTTPS URLs from field value.
+ */
+function extractUrlsFromValue(obj: any): string[] {
+  const urls: string[] = [];
+
+  function recurse(val: any) {
+    if (!val) return;
+    if (typeof val === "string") {
+      const trimmed = val.trim();
+      if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+        urls.push(trimmed);
+      }
+    } else if (Array.isArray(val)) {
+      for (const item of val) recurse(item);
+    } else if (typeof val === "object") {
+      for (const v of Object.values(val)) recurse(v);
+    }
+  }
+
+  recurse(obj);
+  return [...new Set(urls)];
+}
+
+/**
+ * Pure code verifier (NO LLM):
+ * - Normalises both quote and page text (unicode, strip markdown, lowercase, collapse punct & whitespace).
+ * - Accepts 1 to 3 short evidence quotes per field; all must match that field's own source page.
+ * - Value token checks: apply only to phone numbers (digits only) and emails. Never extract digits from URLs/images.
+ * - Checks URLs by domain and path presence in page text, not in the quote.
+ * - Returns structured downgrade records classifying real fabrications vs formatting mismatches.
  */
 export function verifyDossierExtraction(
   extraction: ExtractionOutput,
@@ -79,23 +217,17 @@ export function verifyDossierExtraction(
 ): VerificationResult {
   const fields = JSON.parse(JSON.stringify(extraction)) as ExtractionOutput;
 
-  // Build page map for fast markdown lookup
-  const pageMap = new Map<string, string>();
+  // Build page map with both raw markdown and normalized text
+  const pageMap = new Map<string, { raw: string; normalized: string }>();
   for (const p of scrapedPages) {
     const normUrl = p.url.toLowerCase().replace(/^https?:\/\/(www\.)?/, "").replace(/\/+$/, "");
-    pageMap.set(normUrl, normalizeText(p.markdown));
+    pageMap.set(normUrl, {
+      raw: p.markdown,
+      normalized: normalizeText(p.markdown),
+    });
   }
 
-  const stats: VerificationStats = {
-    totalDowngrades: 0,
-    downgradeReasons: {
-      quote_not_in_page: 0,
-      value_token_not_in_quote: 0,
-      quote_too_long: 0,
-      missing_quote: 0,
-    },
-    fieldDowngrades: [],
-  };
+  const fieldDowngrades: DowngradeRecord[] = [];
 
   const coreFieldKeys = [
     "clinic_name",
@@ -119,124 +251,272 @@ export function verifyDossierExtraction(
       continue;
     }
 
-    // Check 1: Missing evidence quote
-    if (!field.evidence_quote || typeof field.evidence_quote !== "string" || !field.evidence_quote.trim()) {
+    // 1. Gather all quotes (support both array and singular)
+    const quotes: string[] = [];
+    if (Array.isArray(field.evidence_quotes) && field.evidence_quotes.length > 0) {
+      quotes.push(...field.evidence_quotes.filter((q: any) => typeof q === "string" && q.trim().length > 0));
+    } else if (field.evidence_quote && typeof field.evidence_quote === "string" && field.evidence_quote.trim()) {
+      quotes.push(field.evidence_quote.trim());
+    }
+
+    // For doctors: if evidence_quotes is empty on field, check if individual doctor objects in value have quotes
+    if (quotes.length === 0 && key === "doctor_name_and_qualifications" && Array.isArray(field.value)) {
+      for (const doc of field.value) {
+        if (doc && typeof doc.quote === "string" && doc.quote.trim()) {
+          quotes.push(doc.quote.trim());
+        }
+      }
+      if (quotes.length > 0) {
+        field.evidence_quotes = quotes;
+      }
+    }
+
+    // Check 1: Missing evidence quotes
+    if (quotes.length === 0) {
       field.status = "INFERRED";
-      stats.totalDowngrades++;
-      stats.downgradeReasons.missing_quote++;
-      stats.fieldDowngrades.push({
+      fieldDowngrades.push({
         field: key,
         originalStatus: "FOUND",
         newStatus: "INFERRED",
         reason: "missing_quote",
-        details: "Field marked FOUND had no verbatim evidence quote.",
+        normalizedQuote: "",
+        nearestSnippet: "None",
+        classification: "real_fabrication",
+        details: "Field marked FOUND has no evidence quotes.",
       });
       continue;
     }
 
-    const quote = field.evidence_quote.trim();
-    const wordCount = countWords(quote);
-
-    // Check 2: Evidence quote under 25 words
-    if (wordCount > 25) {
-      field.status = "INFERRED";
-      stats.totalDowngrades++;
-      stats.downgradeReasons.quote_too_long++;
-      stats.fieldDowngrades.push({
-        field: key,
-        originalStatus: "FOUND",
-        newStatus: "INFERRED",
-        reason: "quote_too_long",
-        details: `Evidence quote exceeds 25 words (${wordCount} words): "${quote.slice(0, 40)}..."`,
-      });
-      continue;
+    // Check 2: Word count on each quote (<= 25 words)
+    let quoteTooLong = false;
+    for (const q of quotes) {
+      const words = countWords(q);
+      if (words > 25) {
+        quoteTooLong = true;
+        field.status = "INFERRED";
+        fieldDowngrades.push({
+          field: key,
+          originalStatus: "FOUND",
+          newStatus: "INFERRED",
+          reason: "quote_too_long",
+          normalizedQuote: normalizeText(q),
+          nearestSnippet: `Word count: ${words}`,
+          classification: "formatting_or_subtle_mismatch",
+          details: `Quote exceeds 25 words (${words} words): "${q.slice(0, 50)}..."`,
+        });
+        break;
+      }
     }
+    if (quoteTooLong) continue;
 
-    // Check 3: Evidence quote must be a substring of that field's OWN source_url page
+    // Check 3: Quote matching on that field's OWN source page
     const sourceUrl = field.source_url;
     if (!sourceUrl) {
       field.status = "INFERRED";
-      stats.totalDowngrades++;
-      stats.downgradeReasons.quote_not_in_page++;
-      stats.fieldDowngrades.push({
+      fieldDowngrades.push({
         field: key,
         originalStatus: "FOUND",
         newStatus: "INFERRED",
         reason: "quote_not_in_page",
-        details: "Field has evidence_quote but missing source_url.",
+        normalizedQuote: normalizeText(quotes[0]),
+        nearestSnippet: "No source_url provided",
+        classification: "real_fabrication",
+        details: "Field has quotes but no source_url.",
       });
       continue;
     }
 
     const normSourceUrl = sourceUrl.toLowerCase().replace(/^https?:\/\/(www\.)?/, "").replace(/\/+$/, "");
-    const pageText = pageMap.get(normSourceUrl);
-    const normQuote = normalizeText(quote);
+    const pageEntry = pageMap.get(normSourceUrl);
 
-    let isSubstring = Boolean(pageText && pageText.includes(normQuote));
-
-    if (!isSubstring) {
+    if (!pageEntry) {
       field.status = "INFERRED";
-      stats.totalDowngrades++;
-      stats.downgradeReasons.quote_not_in_page++;
-      stats.fieldDowngrades.push({
+      fieldDowngrades.push({
         field: key,
         originalStatus: "FOUND",
         newStatus: "INFERRED",
         reason: "quote_not_in_page",
-        details: `Evidence quote "${quote}" is not a verbatim substring of scraped page markdown.`,
+        normalizedQuote: normalizeText(quotes[0]),
+        nearestSnippet: `Source page ${sourceUrl} was not scraped`,
+        classification: "real_fabrication",
+        details: `Source URL ${sourceUrl} was not among scraped pages.`,
       });
       continue;
     }
 
-    // Check 4: Every phone number, email, URL, and number in value must appear in evidence_quote
-    const tokens = extractTokensToCheck(field.value);
-    const missingTokens: string[] = [];
-    for (const token of tokens) {
-      if (!tokenAppearsInQuote(token, normQuote)) {
-        missingTokens.push(token);
+    let allQuotesMatch = true;
+    for (const q of quotes) {
+      const normQ = normalizeText(q);
+      if (!pageEntry.normalized.includes(normQ)) {
+        allQuotesMatch = false;
+        const nearest = findNearestPageSnippet(normQ, pageEntry.normalized);
+        const classification = nearest.isLikelyFormatting ? "formatting_or_subtle_mismatch" : "real_fabrication";
+
+        field.status = "INFERRED";
+        fieldDowngrades.push({
+          field: key,
+          originalStatus: "FOUND",
+          newStatus: "INFERRED",
+          reason: "quote_not_in_page",
+          normalizedQuote: normQ,
+          nearestSnippet: nearest.snippet,
+          classification,
+          details: `Quote "${q}" is not present on source page ${sourceUrl}. Nearest: ${nearest.snippet}`,
+        });
+        break;
       }
     }
+    if (!allQuotesMatch) continue;
 
-    if (missingTokens.length > 0) {
-      field.status = "INFERRED";
-      stats.totalDowngrades++;
-      stats.downgradeReasons.value_token_not_in_quote++;
-      stats.fieldDowngrades.push({
-        field: key,
-        originalStatus: "FOUND",
-        newStatus: "INFERRED",
-        reason: "value_token_not_in_quote",
-        details: `Tokens [${missingTokens.join(", ")}] appear in value but are absent from evidence_quote.`,
-      });
-      continue;
+    // Check 4: Value token check (PHONE NUMBERS & EMAILS ONLY)
+    // "apply only to phone numbers (compare digits only) and emails. Never extract digit strings from URLs or image filenames."
+
+    // 4a. Phone numbers: compare digits only
+    const phoneDigitsList = extractPhonesFromValue(field.value);
+    const quotesDigits = quotes.map((q) => q.replace(/\D/g, "")).join(" ");
+
+    let missingPhone = false;
+    for (const pDigits of phoneDigitsList) {
+      const baseDigits = pDigits.length === 11 && pDigits.startsWith("1") ? pDigits.slice(1) : pDigits;
+      if (!quotesDigits.includes(pDigits) && !quotesDigits.includes(baseDigits)) {
+        missingPhone = true;
+        field.status = "INFERRED";
+        fieldDowngrades.push({
+          field: key,
+          originalStatus: "FOUND",
+          newStatus: "INFERRED",
+          reason: "phone_not_in_quote",
+          normalizedQuote: normalizeText(quotes.join(" ")),
+          nearestSnippet: `Phone digits ${pDigits} missing from quotes digits [${quotesDigits}]`,
+          classification: "real_fabrication",
+          details: `Phone number digits [${pDigits}] appear in value but are absent from evidence quotes.`,
+        });
+        break;
+      }
     }
-  }
+    if (missingPhone) continue;
 
-  // Also verify answered_on_site FAQs
-  if (fields.patient_faqs && Array.isArray(fields.patient_faqs.answered_on_site)) {
-    for (const faq of fields.patient_faqs.answered_on_site) {
-      if (faq.evidence_quote) {
-        const normQuote = normalizeText(faq.evidence_quote);
-        let foundInPages = false;
-        for (const [, text] of pageMap.entries()) {
-          if (text.includes(normQuote)) {
-            foundInPages = true;
-            break;
+    // 4b. Emails: case-insensitive check in quotes
+    const emailsList = extractEmailsFromValue(field.value);
+    let missingEmail = false;
+    for (const email of emailsList) {
+      const inQuotes = quotes.some((q) => q.toLowerCase().includes(email));
+      if (!inQuotes) {
+        missingEmail = true;
+        field.status = "INFERRED";
+        fieldDowngrades.push({
+          field: key,
+          originalStatus: "FOUND",
+          newStatus: "INFERRED",
+          reason: "email_not_in_quote",
+          normalizedQuote: normalizeText(quotes.join(" ")),
+          nearestSnippet: `Email ${email} missing from quotes`,
+          classification: "real_fabrication",
+          details: `Email [${email}] appears in value but is absent from evidence quotes.`,
+        });
+        break;
+      }
+    }
+    if (missingEmail) continue;
+
+    // 4c. Check URLs by domain and path presence in PAGE TEXT (not in quote)
+    const urlsList = extractUrlsFromValue(field.value);
+    let missingUrlOnPage = false;
+    for (const u of urlsList) {
+      try {
+        const parsed = new URL(u);
+        const domain = parsed.hostname.replace(/^www\./, "").toLowerCase();
+        const rawPath = parsed.pathname ? parsed.pathname.replace(/\/+$/, "").toLowerCase() : "";
+
+        const domainInPage = pageEntry.raw.toLowerCase().includes(domain);
+        const pathInPage = rawPath.length > 1 ? pageEntry.raw.toLowerCase().includes(rawPath) : true;
+
+        if (!domainInPage || !pathInPage) {
+          missingUrlOnPage = true;
+          field.status = "INFERRED";
+          fieldDowngrades.push({
+            field: key,
+            originalStatus: "FOUND",
+            newStatus: "INFERRED",
+            reason: "url_not_in_page",
+            normalizedQuote: domain,
+            nearestSnippet: `URL [domain: ${domain}, path: ${rawPath || "/"}] not found in source page text`,
+            classification: "real_fabrication",
+            details: `URL ${u} (domain/path) is not present in the source page text.`,
+          });
+          break;
+        }
+      } catch {
+        // ignore unparseable URLs
+      }
+    }
+    if (missingUrlOnPage) continue;
+
+    // 4d. Doctor marketing claims check
+    if (key === "doctor_name_and_qualifications" && Array.isArray(field.value)) {
+      for (const doc of field.value) {
+        if (!doc) continue;
+        if (doc.title) {
+          const marketingRegex = /\b(over \d+|#1|premier|leading|top-rated|best|miracle|guarantee|renowned)\b/i;
+          if (marketingRegex.test(doc.title)) {
+            const match = doc.title.match(marketingRegex);
+            const claim = match ? match[0].toLowerCase() : "";
+            const normDocQuote = doc.quote ? normalizeText(doc.quote) : "";
+            const isSupported = normDocQuote.includes(claim) || pageEntry.normalized.includes(claim);
+            if (!isSupported) {
+              doc.title = doc.title.replace(/\b(over \d+[^,.;]*|#1|premier|leading|top-rated|best|miracle|guarantee|renowned)\b/gi, "").replace(/\s+/g, " ").trim();
+            }
+          }
+          // Clinical title only: trim giant sentences if stuffed in title
+          if (doc.title.length > 60) {
+            const parts = doc.title.split(/[,.]/);
+            doc.title = parts[0].trim();
           }
         }
-        if (!foundInPages) {
-          // If quote not in scraped page, convert to inferred gap
-          fields.patient_faqs.gaps.push({
-            question: faq.question,
-            status: "INFERRED",
-          });
+        if (!Array.isArray(doc.qualifications)) {
+          doc.qualifications = [];
+        }
+        if (doc.quote && typeof doc.quote === "string") {
+          const normDocQ = normalizeText(doc.quote);
+          if (normDocQ && !pageEntry.normalized.includes(normDocQ)) {
+            doc.quote = null;
+          }
         }
       }
     }
   }
+
+  // FAQ check: verify answered_on_site quotes
+  if (fields.patient_faqs && Array.isArray(fields.patient_faqs.answered_on_site)) {
+    const verifiedFaqs: any[] = [];
+    for (const faq of fields.patient_faqs.answered_on_site) {
+      if (!faq.source_url || !faq.evidence_quote) continue;
+      const normFaqUrl = faq.source_url.toLowerCase().replace(/^https?:\/\/(www\.)?/, "").replace(/\/+$/, "");
+      const faqPage = pageMap.get(normFaqUrl);
+
+      if (faqPage && faqPage.normalized.includes(normalizeText(faq.evidence_quote))) {
+        verifiedFaqs.push(faq);
+      } else {
+        // If not grounded on that page, convert to inferred gap
+        fields.patient_faqs.gaps.push({
+          question: faq.question,
+          status: "INFERRED",
+        });
+      }
+    }
+    fields.patient_faqs.answered_on_site = verifiedFaqs;
+  }
+
+  const realFabricationsCount = fieldDowngrades.filter((d) => d.classification === "real_fabrication").length;
+  const formattingMismatchesCount = fieldDowngrades.filter((d) => d.classification === "formatting_or_subtle_mismatch").length;
 
   return {
     verifiedFields: fields,
-    stats,
+    stats: {
+      totalDowngrades: fieldDowngrades.length,
+      realFabricationsCount,
+      formattingMismatchesCount,
+      fieldDowngrades,
+    },
   };
 }

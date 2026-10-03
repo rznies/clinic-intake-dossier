@@ -179,14 +179,13 @@ export async function evaluateGapsAndTasks(
   let strategyBlockersReason = "";
   if (!readyForStrategy) {
     const blockingLabels = missingItems.map((m) => m.label).slice(0, 2).join(" & ");
-    strategyBlockersReason = `Pending ${blockersCount} onboarding items (${blockingLabels}${missingItems.length > 2 ? "..." : ""})`;
+    strategyBlockersReason = `Pending ${blockersCount} onboarding items: ${blockingLabels}${missingItems.length > 2 ? "..." : ""}`;
   } else {
     strategyBlockersReason = "All critical onboarding assets satisfied";
   }
 
-  // Format canonical status header
-  // "X of 13 found, Y inferred, Z missing, D verifier downgrades, FAQ gaps: G, B blockers, W drafts ready. Ready for strategy: [true|false] (reason)"
-  const statusHeader = `${foundCount} of 13 found, ${inferredCount} inferred, ${missingCount} missing, ${verificationStats.totalDowngrades} verifier downgrades, FAQ gaps: ${faqGapsCount}, ${blockersCount} blockers, ${draftsReadyCount} drafts ready. Ready for strategy: ${readyForStrategy} (${strategyBlockersReason})`;
+  // Format canonical status header (strictly no nested parentheses)
+  const statusHeader = `${foundCount} of 13 found, ${inferredCount} inferred, ${missingCount} missing, ${verificationStats.totalDowngrades} verifier downgrades, FAQ gaps: ${faqGapsCount}, ${blockersCount} blockers, ${draftsReadyCount} drafts ready. Ready for strategy: ${readyForStrategy} - ${strategyBlockersReason}`;
 
   return {
     missingItems,

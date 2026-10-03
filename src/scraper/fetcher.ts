@@ -23,8 +23,8 @@ function parseRetryDelayMs(errorMessage: string): number {
   if (match && match[1]) {
     const seconds = parseInt(match[1], 10);
     if (!isNaN(seconds) && seconds > 0) {
-      // Cap wait time at 35s to prevent stalling
-      return Math.min(seconds * 1000, 35000);
+      // Add 2s buffer over the published reset time to ensure window cleared
+      return (seconds + 2) * 1000;
     }
   }
   return 10000;
@@ -77,13 +77,12 @@ async function scrapeSingleUrl(
 }
 
 /**
- * Scrapes an array of URLs with concurrency max 3, rate-limit backoff, and 1 retry per failed page.
- * Per-page failures produce partial results with warnings (never silent failure).
+ * Scrapes an array of URLs: strictly serialised, 5.5s spacing, honours reset times,
+ * and retries failed pages after the reset window. Goal: zero lost pages.
  */
 export async function scrapePagesBatch(
   urls: string[],
   firecrawlApiKey: string,
-  concurrency: number = 3,
   charCapPerPage: number = 25000
 ): Promise<ScrapeBatchResult> {
   const firecrawl = new Firecrawl({ apiKey: firecrawlApiKey });
@@ -93,59 +92,41 @@ export async function scrapePagesBatch(
   let creditsUsed = 0;
   let retriesAttempted = 0;
 
-  let lastWaitUntil = 0;
+  for (let i = 0; i < urls.length; i++) {
+    const url = urls[i];
 
-  // Process in chunks of max 3 concurrency
-  for (let i = 0; i < urls.length; i += concurrency) {
-    const chunk = urls.slice(i, i + concurrency);
-    const results = await Promise.all(
-      chunk.map((u) => scrapeSingleUrl(firecrawl, u, charCapPerPage))
-    );
+    // Enforce 5.5s spacing between requests (skip before first request)
+    if (i > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 5500));
+    }
 
-    for (let j = 0; j < results.length; j++) {
-      let res = results[j];
-      const url = chunk[j];
+    let res = await scrapeSingleUrl(firecrawl, url, charCapPerPage);
 
+    if (res.page) {
+      creditsUsed += res.creditCost;
+      pages.push(res.page);
+      continue;
+    }
+
+    // If rate-limited or failed, wait full reset window and retry once
+    if (res.error) {
+      retriesAttempted++;
+      const waitMs = res.isRateLimit ? parseRetryDelayMs(res.error) : 5500;
+      console.warn(`[Scraper] Page ${url} failed (${res.error}). Waiting ${(waitMs / 1000).toFixed(1)}s before retry...`);
+      await new Promise((r) => setTimeout(r, waitMs));
+
+      // Retry single URL
+      res = await scrapeSingleUrl(firecrawl, url, charCapPerPage);
       if (res.page) {
         creditsUsed += res.creditCost;
         pages.push(res.page);
+        warnings.push(`Page ${url} succeeded on retry after waiting ${(waitMs / 1000).toFixed(0)}s.`);
         continue;
       }
 
-      // If rate limited or failed, retry once after waiting
-      if (res.error) {
-        retriesAttempted++;
-        const now = Date.now();
-        const baseWaitMs = res.isRateLimit ? parseRetryDelayMs(res.error) : 3000;
-        const neededWait = Math.max(1000, lastWaitUntil > now ? lastWaitUntil - now : baseWaitMs);
-
-        if (neededWait > 1200) {
-          console.warn(`[Scraper] Page ${url} failed (${res.error}). Retrying once after ${(neededWait / 1000).toFixed(0)}s wait...`);
-          await new Promise((r) => setTimeout(r, neededWait));
-          lastWaitUntil = Date.now() + 1000;
-        } else {
-          await new Promise((r) => setTimeout(r, 1000));
-        }
-
-        // Retry single URL once
-        res = await scrapeSingleUrl(firecrawl, url, charCapPerPage);
-        if (res.page) {
-          creditsUsed += res.creditCost;
-          pages.push(res.page);
-          warnings.push(`Page ${url} succeeded on retry after rate-limit backoff.`);
-          continue;
-        }
-
-
-        // If it still failed, record failure and partial results
-        failedUrls.push({ url, error: res.error || "Unknown error on retry" });
-        warnings.push(`Failed to scrape page ${url} after 1 retry: ${res.error}. Partial results preserved.`);
-      }
-    }
-
-    // Inter-chunk throttle to stay smoothly under rate limits
-    if (i + concurrency < urls.length) {
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      // If still failed after retry, record failure
+      failedUrls.push({ url, error: res.error || "Failed on retry" });
+      warnings.push(`Failed to scrape page ${url} after 1 retry: ${res.error}. Fields depending on this page will be marked MISSING.`);
     }
   }
 

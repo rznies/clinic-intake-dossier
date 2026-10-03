@@ -17,7 +17,7 @@ Onboarding a doctor has traditionally been slow because critical inputs are scat
 
 **This tool takes a single clinic website URL and transforms it into:**
 1. A structured clinical intake dossier with strict status labels (`FOUND`, `INFERRED`, `MISSING`).
-2. Code-verified verbatim quote substrings anchored to their source pages.
+2. Code-checked verbatim quote substrings anchored to their source pages.
 3. An operational gap checklist identifying blocking assets for Video and Voice twins.
 4. Pre-drafted WhatsApp messages for immediate human coordinator review.
 5. An RFC 4180-compliant `tasks.csv` ready to import into ClickUp, Linear, or Notion.
@@ -35,11 +35,11 @@ Onboarding a doctor has traditionally been slow because critical inputs are scat
   - Pure deterministic TypeScript code checks that every field marked `FOUND` has an `evidence_quote` under 25 words that is a literal substring of that field's OWN `source_url` page.
   - Any phone number or email in the field value must appear inside the quote; otherwise, code automatically downgrades the status to `INFERRED`.
 - **Gap & Action Engine (`src/engine/gap-engine.ts`):**
-  - Compares the verified dossier against onboarding requirements (`requirements.config.json`).
+  - Compares the extracted dossier against onboarding requirements (`requirements.config.json`).
   - Evaluates blockers (headshot, booking channel, clinical approval contact, audio setup, logo).
   - Calculates business-day due dates (`+2 working days`) and outputs the canonical status header:
     ```
-    "X of 13 found, Y inferred, Z missing, D verifier downgrades, FAQ gaps: G, B blockers, W drafts ready. Ready for strategy: [true|false] (reason)"
+    "X of 13 found, Y inferred, Z missing, D verifier downgrades, FAQ gaps: G, B blockers, W drafts ready. Ready for strategy: [true|false] - reason"
     ```
 
 ---
@@ -54,7 +54,7 @@ Onboarding a doctor has traditionally been slow because critical inputs are scat
 
 ---
 
-## 4. Live Verified Clinic Samples
+## 4. Real Clinic Samples
 
 Both samples were generated from live clinic websites:
 

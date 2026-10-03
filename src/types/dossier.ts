@@ -12,6 +12,7 @@ export function createFieldSchema<T extends z.ZodTypeAny>(valueSchema: T) {
     value: valueSchema,
     status: FieldStatusSchema,
     source_url: z.string().nullable().optional(),
+    evidence_quotes: z.array(z.string()).max(3).default([]),
     evidence_quote: z.string().nullable().optional(),
     confidence: ConfidenceSchema,
   });
@@ -23,14 +24,14 @@ export const ClinicNameFieldSchema = createFieldSchema(z.string().nullable());
 // 2. Doctor Name and Qualifications
 export const DoctorItemSchema = z.object({
   name: z.string().describe("Doctor's full name, e.g. Dr. Abraham Hoellrich"),
-  qualifications: z.array(z.string()).default([]).describe("Degrees/credentials, e.g. ['DDS']"),
-  title: z.string().optional().nullable().describe("Concise title under 10 words, e.g. Lead Dentist, DDS"),
-  bio_summary: z.string().optional().nullable().describe("Concise bio summary under 30 words"),
+  title: z.string().optional().nullable().describe("Professional clinical title only, e.g. Dentist, DDS. No marketing claims."),
+  qualifications: z.array(z.string()).default([]).describe("Degrees and clinical credentials only, e.g. ['DDS', 'MD']"),
+  quote: z.string().optional().nullable().describe("Verbatim quote under 25 words mentioning this doctor on the page"),
 });
-export const DoctorFieldSchema = createFieldSchema(z.array(DoctorItemSchema).max(6).default([]));
+export const DoctorFieldSchema = createFieldSchema(z.array(DoctorItemSchema).max(8).default([]));
 
 // 3. Specialty
-export const SpecialtyFieldSchema = createFieldSchema(z.array(z.string()).default([]));
+export const SpecialtyFieldSchema = createFieldSchema(z.array(z.string()).max(4).default([]));
 
 // 4. Services / Procedures
 export const ServiceItemSchema = z.object({
@@ -202,12 +203,21 @@ export interface DossierRecord {
     ready_for_strategy: boolean;
     strategy_blockers_reason: string;
   };
-  downgrade_reasons: {
-    quote_not_in_page: number;
-    value_token_not_in_quote: number;
-    quote_too_long: number;
-    missing_quote: number;
+  downgrade_summary: {
+    total_downgrades: number;
+    real_fabrications: number;
+    formatting_mismatches: number;
   };
+  downgrades_detail: Array<{
+    field: string;
+    originalStatus: string;
+    newStatus: string;
+    reason: string;
+    normalizedQuote: string;
+    nearestSnippet: string;
+    classification: string;
+    details: string;
+  }>;
   fields: ExtractionOutput;
   missing_items: MissingItem[];
   tasks: TaskRow[];
